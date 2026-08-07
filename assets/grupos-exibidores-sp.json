@@ -1,0 +1,18 @@
+{
+  "CINEMARK": "Privado",
+  "UCI": "Privado",
+  "CINÉPOLIS": "Privado",
+  "CINESYSTEM": "Privado",
+  "KINOPLEX": "Privado",
+  "MOVIECOM": "Privado",
+  "ARAÚJO": "Privado",
+  "CINE A": "Privado",
+  "CINEFLIX": "Privado",
+  "CINE MARQUISE": "Privado",
+  "PLAYARTE": "Privado",
+  "GRUPO CINE": "Privado",
+  "SPCINE": "Público",
+  "ESPAÇO": "Independente",
+  "RESERVA": "Independente",
+  "NÃO PERTENCE A NENHUM GRUPO EXIBIDOR": "Sem grupo"
+}
