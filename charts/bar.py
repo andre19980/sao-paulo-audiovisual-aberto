@@ -12,7 +12,7 @@ def plot_custom_grouped_bar_chart(df, x, x_title, y, y_title, x_offset, x_offset
     ).properties(
       title=alt.TitleParams(
         text=title,
-        anchor='middle'
+        anchor='start'
       )
     )
   )
@@ -31,7 +31,7 @@ def plot_custom_stacked_bar_chart(df, x, x_title, y, y_title, color, color_title
     ).properties(
       title=alt.TitleParams(
         text=title,
-        anchor='middle'
+        anchor='start'
       )
     )
   )

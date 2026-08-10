@@ -25,11 +25,9 @@ def load_data(url):
 st.set_page_config(layout="wide")
 
 # Load data
-data_load_state = st.text('Loading data...')
 df_salas_complexos = load_data(DATA_URLS['salas_de_exibicao_e_complexos'])
 df_salas_evolucao = load_data(DATA_URLS['salas_evolucao'])
 df_complexos_evolucao = load_data(DATA_URLS['complexos_evolucao'])
-data_load_state.text('Loading data...done!')
 
 # Display raw data
 # st.text('Raw data')
@@ -39,7 +37,7 @@ data_load_state.text('Loading data...done!')
 
 tab1, tab2, tab3, tab4 = st.tabs([
   'Evolução de espaços',
-  'Densidade de complexos',
+  'Densidade por complexos',
   'Exibidores e operação',
   'Acessibilidade'
 ])

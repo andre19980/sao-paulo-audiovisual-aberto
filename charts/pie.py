@@ -12,7 +12,7 @@ def plot_custom_pie_chart(df, color, theta, title):
       .properties(
         title=alt.TitleParams(
           text=title,
-          anchor='middle',
+          anchor='start',
         )
       )
   )

@@ -6,7 +6,7 @@ from charts.brazil_map import plot_custom_brazil_map
 from charts.strip_jitter import plot_custom_strip_jitter_chart
 
 def section(df_complexos_evolucao, df_salas_complexos):
-  st.header('2. Densidade por complexos')
+  st.header('Densidade por complexos')
 
   df_complexos_abertos_2026 = df_complexos_evolucao[
     (df_complexos_evolucao['ANO'] == 2026) &
@@ -37,6 +37,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
   df_media_salas_por_complexo_cidade['Posição'] = df_media_salas_por_complexo_cidade.index + 1
   df_media_salas_por_complexo_cidade['Destaque'] = df_media_salas_por_complexo_cidade['Município'].eq('SÃO PAULO')
 
+  st.subheader('Distribuição de salas e complexos por município')
+  
   with st.container(border=True):
     plot_custom_bubble_chart(
       df=df_media_salas_por_complexo_cidade,
@@ -50,6 +52,13 @@ def section(df_complexos_evolucao, df_salas_complexos):
       color_title='São Paulo',
       title='Média de salas por complexo vs número de complexos por município',
       log_x=True,
+    )
+    st.caption(
+      'Cada bolha é um município: o eixo X mostra quantos complexos existem (escala logarítmica), '
+      'o eixo Y, a média de salas por complexo, e o tamanho da bolha, o total de salas do município. '
+      'Um ponto no canto superior direito indica um município com muitos complexos e, em média, '
+      'grandes multiprogramas por complexo; no canto inferior esquerdo, poucos complexos e salas '
+      'menores. São Paulo é destacado em cor.'
     )
     
   st.subheader('Comparação da média de salas por complexo entre as capitais brasileiras')
@@ -69,12 +78,6 @@ def section(df_complexos_evolucao, df_salas_complexos):
         df_capitais = df_media_salas_por_complexo_cidade[df_media_salas_por_complexo_cidade['Município'].isin(capitais_brasileiras)].copy()
         df_capitais['É a capital'] = df_capitais['Município'].eq('SÃO PAULO')
         df_capitais = df_capitais.sort_values('Média de salas por complexo')
-
-        # ---------------------------------------------------------------------------
-        # Mapa do Brasil: coroplete dos estados ao fundo + bolinhas nas capitais.
-        # Tamanho da bolinha  -> Número de complexos
-        # Cor da bolinha      -> Média de salas por complexo
-        # ---------------------------------------------------------------------------
 
         # Coordenadas (latitude, longitude) aproximadas de cada capital brasileira.
         coordenadas_capitais = {
@@ -107,7 +110,6 @@ def section(df_complexos_evolucao, df_salas_complexos):
           'PALMAS': (-10.212, -48.361),
         }
 
-        # Mapeamento capital -> UF (sigla usada pelo GeoJSON para o coroplete).
         uf_das_capitais = {
           'RIO BRANCO': 'AC', 'MACEIÓ': 'AL', 'MACAPÁ': 'AP', 'MANAUS': 'AM',
           'SALVADOR': 'BA', 'FORTALEZA': 'CE', 'BRASÍLIA': 'DF', 'VITÓRIA': 'ES',
@@ -131,7 +133,13 @@ def section(df_complexos_evolucao, df_salas_complexos):
           size_title='Número de complexos',
           color='Média de salas por complexo',
           color_title='Média de salas por complexo',
-          title='Capitais brasileiras no mapa: tamanho = nº de complexos, cor = média de salas por complexo (2026)',
+          title='Média de salas por complexo e número de complexos nas capitais brasileiras (2026)',
+        )
+        st.caption(
+          'Cada bolha é uma capital: o tamanho representa o número de complexos de cinema '
+          'e a cor, a média de salas por complexo da cidade. São Paulo se destaca pelo volume '
+          'de complexos, mas capitais com médias altas (bolhas escuras) concentram a maior '
+          'parte das salas em poucos complexos.'
         )
       
       with col2:
@@ -144,17 +152,6 @@ def section(df_complexos_evolucao, df_salas_complexos):
 
 
   st.space(size='medium')
-  # plot_custom_labeled_scatter_chart(
-  #   df=df_capitais,
-  #   x='Número de complexos',
-  #   x_title='Número de complexos (escala log)',
-  #   y='Média de salas por complexo',
-  #   y_title='Média de salas por complexo',
-  #   size='Total de salas',
-  #   label='Município',
-  #   highlight='É a capital',
-  #   title='Capitais brasileiras: média de salas por complexo vs número de complexos (2026)',
-  # )
 
   df_salas_por_complexo_sp = df_salas_municipio_complexo[df_salas_municipio_complexo['MUNICIPIO_COMPLEXO'] == 'SÃO PAULO']
   df_salas_por_complexo_sp.sort_values(by='QUANTIDADE_DE_SALAS', ascending=False, inplace=True)
@@ -168,7 +165,6 @@ def section(df_complexos_evolucao, df_salas_complexos):
   # centróide do seu CEP, carregadas de um asset local (assets/cep_sp_coordenadas.csv).
   # ---------------------------------------------------------------------------
 
-  # Lê o asset CEP -> (latitude, longitude) gerado previamente.
   df_cep_sp = pd.read_csv('assets/cep_sp_coordenadas.csv', dtype={'cep': str})
 
   # Tabela de complexos de SP com quantidade de salas.
@@ -196,28 +192,6 @@ def section(df_complexos_evolucao, df_salas_complexos):
   if n_fallback:
     st.caption(f'{n_fallback} complexo(s) sem CEP na base receberam a localização aproximada do centro de São Paulo.')
 
-  # plot_custom_brazil_map(
-  #   df=df_complexos_sp_mapa,
-  #   geojson_path='assets/sp-municipio.geojson',
-  #   label='NOME_COMPLEXO',
-  #   size='QUANTIDADE_DE_SALAS',
-  #   size_title='Quantidade de salas',
-  #   color='QUANTIDADE_DE_SALAS',
-  #   color_title='Quantidade de salas',
-  #   title='Distribuição da quantidade de salas por complexo no município de São Paulo (2026)',
-  #   lat_col='latitude',
-  #   lon_col='longitude',
-  # )
-
-  # ---------------------------------------------------------------------------
-  # Strip/jitter plot: porte dos complexos de São Paulo.
-  # Cada complexo é um ponto no eixo Y (quantidade de salas). Como os complexos
-  # estão concentrados no centro, o mapa sobrepõe as bolinhas; aqui adicionamos
-  # ruído (jitter) no eixo X para separá-los e destacar megaplex (10+) vs
-  # complexos pequenos (2-3 salas). A linha tracejada marca a média.
-  # ---------------------------------------------------------------------------
-
-  # Categoriza o porte do complexo pela quantidade de salas.
   porte_faixas = [1, 2, 3, 10, 100]  # limites: 1, [2-3], [4-9], [10+]
   porte_rotulos = ['1 sala', 'Pequeno (2-3)', 'Médio (4-9)', 'Megaplex (10+)']
   df_complexos_sp_mapa['Porte'] = pd.cut(
@@ -227,6 +201,7 @@ def section(df_complexos_evolucao, df_salas_complexos):
     include_lowest=True,
   )
 
+  st.subheader('Distribuição de complexos por porte no município de São Paulo')
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
     
@@ -259,6 +234,12 @@ def section(df_complexos_evolucao, df_salas_complexos):
           color_scale_domain=[0, df_complexos_sp_mapa['QUANTIDADE_DE_SALAS'].max()],
           size_scale_domain=[0, df_complexos_sp_mapa['QUANTIDADE_DE_SALAS'].max()],
         )
+        st.caption(
+          'Cada círculo é um complexo de cinema, posicionado pelas coordenadas aproximadas '
+          'do seu CEP. O tamanho e a cor indicam o número de salas do complexo. Concentrações '
+          'de círculos grandes mostram onde estão os cinemas multiprograma do município; '
+          'o filtro "Porte do complexo" restringe o mapa às faixas escolhidas.'
+        )
 
     with col1:
       st.dataframe(
@@ -290,7 +271,7 @@ def section(df_complexos_evolucao, df_salas_complexos):
           x_title=None,
           color='Porte',
           color_title='Porte do complexo',
-          title='Distribuição dos complexos de São Paulo por porte e quantidade de salas (2026)',
+          title='Distribuição dos complexos por porte e quantidade de salas no município de São Paulo (2026)',
         )
         st.caption('Pontos com mesmo número de salas foram levemente espalhados no eixo X (jitter) apenas para evitar sobreposição. Passe o mouse para ver o nome, bairro e nº de salas de cada complexo.')
         
@@ -315,8 +296,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
           .properties(
             height=480,
             title=alt.TitleParams(
-              text='Quantidade de complexos por porte em São Paulo (2026)',
-              anchor='middle',
+              text='Quantidade de complexos por porte no município de São Paulo (2026)',
+              anchor='start',
             ),
           )
       )

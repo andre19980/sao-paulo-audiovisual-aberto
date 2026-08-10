@@ -16,7 +16,7 @@ def plot_custom_bubble_chart(df, x, x_title, y, y_title, size, size_title, color
         height=420,
         title=alt.TitleParams(
           text=title,
-          anchor='middle',
+          anchor='start',
         )
       )
   )

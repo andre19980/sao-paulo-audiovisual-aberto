@@ -16,7 +16,7 @@ def plot_custom_heatmap(df, x, x_title, y, y_title, color, color_title, title, c
       height={'step': cell_size},
       title=alt.TitleParams(
         text=title,
-        anchor='middle'
+        anchor='start'
       )
     )
   )

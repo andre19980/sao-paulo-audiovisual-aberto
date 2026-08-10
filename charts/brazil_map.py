@@ -26,8 +26,6 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
   lat_col / lon_col : str
     Nomes das colunas de latitude/longitude do dataframe (defaults 'Latitude'/'Longitude').
   """
-  # Carrega o GeoJSON dos estados como dados inline (embed no spec). Isso evita
-  # que o Vega-fetch um URL relativo, que pode falhar dentro do Streamlit.
   with open(geojson_path, 'r', encoding='utf-8') as f:
     geo_data = json.load(f)
 
@@ -72,7 +70,7 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
       .properties(
         width=760,
         height=620,
-        title=alt.TitleParams(text=title, anchor='middle'),
+        title=alt.TitleParams(text=title, anchor='start'),
       )
   )
 

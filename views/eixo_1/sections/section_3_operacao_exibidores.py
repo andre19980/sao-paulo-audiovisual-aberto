@@ -5,13 +5,12 @@ from charts.pie import plot_custom_pie_chart
 from charts.heatmap import plot_custom_heatmap
 
 def section(df_salas_complexos):
-  st.header('3. Operação e situação do exibidor na cidade de São Paulo')
+  st.header('Operação e situação do exibidor na cidade de São Paulo')
 
   st.subheader('Informações sobre grupos exibidores no município')
 
   df_salas_complexos_sp = df_salas_complexos[df_salas_complexos['MUNICIPIO_COMPLEXO'] == 'SÃO PAULO']
   df_exibidores_sp = df_salas_complexos['REGISTRO_EXIBIDOR'].unique()
-  st.write(df_salas_complexos.groupby(['REGISTRO_EXIBIDOR', 'SITUACAO_EXIBIDOR']).size().reset_index(name='SIZE')['REGISTRO_EXIBIDOR'].is_unique)
   df_exibidores_situacao = df_salas_complexos.groupby(['REGISTRO_EXIBIDOR', 'SITUACAO_EXIBIDOR']).size().reset_index()
   df_exibidores_regulares_sp = df_exibidores_situacao[df_exibidores_situacao['SITUACAO_EXIBIDOR'] == 'REGULAR']
   df_exibidores_irregulares_sp = df_exibidores_situacao[df_exibidores_situacao['SITUACAO_EXIBIDOR'] == 'IRREGULAR']
@@ -99,20 +98,22 @@ def section(df_salas_complexos):
         st.table(df_grupos_exibidores, hide_index=True, border='horizontal')
         
     with col2:
-      plot_custom_pie_chart(
-        df=df_salas_por_categoria,
-        color='CATEGORIA',
-        theta='NÚMERO DE SALAS',
-        title=''
-      )
+      with st.container(border=True):
+        plot_custom_pie_chart(
+          df=df_salas_por_categoria,
+          color='CATEGORIA',
+          theta='NÚMERO DE SALAS',
+          title='Distribuição de salas por categoria (2026)'
+        )
 
-      plot_custom_heatmap(
-        df=df_salas_por_categoria_operacao,
-        x='CATEGORIA',
-        x_title='Categoria',
-        y='OPERAÇÃO USUAL',
-        y_title='Operação usual',
-        color='NÚMERO DE SALAS',
-        color_title='Quantidade de salas',
-        title='Concentração de salas por categoria e operação usual'
-      )
+      with st.container(border=True):
+        plot_custom_heatmap(
+          df=df_salas_por_categoria_operacao,
+          x='CATEGORIA',
+          x_title='Categoria',
+          y='OPERAÇÃO USUAL',
+          y_title='Operação usual',
+          color='NÚMERO DE SALAS',
+          color_title='Quantidade de salas',
+          title='Concentração de salas por categoria e operação usual (2026)'
+        )

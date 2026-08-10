@@ -24,7 +24,7 @@ def plot_custom_labeled_scatter_chart(df, x, x_title, y, y_title, size, label, h
       )
       .properties(
         height=460,
-        title=alt.TitleParams(text=title, anchor='middle'),
+        title=alt.TitleParams(text=title, anchor='start'),
       )
   )
 

@@ -5,7 +5,8 @@ from charts.line import plot_custom_line_chart
 from charts.bar import plot_custom_grouped_bar_chart
 
 def section(df_salas_evolucao, df_complexos_evolucao):
-  st.header('1. Evolução temporal de espaços de cinema')
+  st.header('Evolução temporal de espaços de cinema')
+
   df_salas_sp = df_salas_evolucao[df_salas_evolucao['MUNICIPIO'] == 'SÃO PAULO']
   df_serie_salas_sp = df_salas_sp.value_counts('ANO').sort_index().reset_index().rename(columns={
     'ANO': 'Ano',

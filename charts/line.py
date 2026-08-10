@@ -12,7 +12,7 @@ def plot_custom_line_chart(df, x, x_title, y, y_title, title):
       .properties(
         title=alt.TitleParams(
           text=title,
-          anchor='middle',
+          anchor='start',
         )
       )
   )

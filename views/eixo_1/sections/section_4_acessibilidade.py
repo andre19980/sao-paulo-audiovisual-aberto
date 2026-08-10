@@ -6,7 +6,7 @@ import unicodedata
 from charts.bar import plot_custom_grouped_bar_chart
 
 def section(df_salas_complexos):
-  st.header('4. Acessibilidade física')
+  st.header('Acessibilidade física')
 
   acessibilidade_criterios = [
     'ASSENTOS_SALA',
@@ -23,8 +23,7 @@ def section(df_salas_complexos):
   
   df_acc_sp_func = df_salas_acessibilidade_sp[df_salas_acessibilidade_sp['SITUACAO_SALA'] == 'EM FUNCIONAMENTO'].copy()
   
-  # Critérios avaliados como "sala com o recurso". Os três primeiros usam >0 assentos;
-  # os demais são presença (SIM/NÃO).
+  # Critérios avaliados como "sala com o recurso"
   df_acc_sp_func['Cadeirantes'] = df_acc_sp_func['ASSENTOS_CADEIRANTES'].fillna(0) > 0
   df_acc_sp_func['Mobilidade reduzida'] = df_acc_sp_func['ASSENTOS_MOBILIDADE_REDUZIDA'].fillna(0) > 0
   df_acc_sp_func['Obesidade'] = df_acc_sp_func['ASSENTOS_OBESIDADE'].fillna(0) > 0
@@ -71,16 +70,12 @@ def section(df_salas_complexos):
     value_name='% das salas',
   )
   
+  st.subheader('Proporção de salas com acessibilidade física no município de São Paulo')
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
 
     with col1:
       with st.container(border=True):
-        st.subheader('Acessibilidade x Porte da sala')
-        # ---------------------------------------------------------------------------
-        # (1a) Porte da sala x Acessibilidade (São Paulo, em funcionamento)
-        # ---------------------------------------------------------------------------
-    
         # Porcentagem de salas de cada faixa que possui o recurso, em formato longo p/ Altair.
         df_porte_acc = (
           df_acc_sp_func.groupby(['Faixa de assentos'], observed=True)[criterios_porte]
@@ -99,16 +94,14 @@ def section(df_salas_complexos):
           y_title='% das salas com o recurso',
           x_offset='Atributo de acessibilidade',
           x_offset_title='Atributo de acessibilidade',
-          title='Proporção de salas com acessibilidade por porte da sala (São Paulo, 2026)',
+          title='Proporção de salas com acessibilidade por porte da sala (2026)',
           x_scale_sort=porte_rotulos_assentos,
         )
-        st.caption('Salas pequenas (até 100 lugares) têm proporção muito menor de assentos para mobilidade reduzida e obesidade do que salas médias/grandes. Assentos para cadeirantes são praticamente universais em todos os portes. Rampa de acesso à sala é o critério mais raro, independentemente do porte.')
+        st.text('Salas pequenas (até 100 lugares) têm proporção muito menor de assentos para mobilidade reduzida e obesidade do que salas médias/grandes. Assentos para cadeirantes são praticamente universais em todos os portes. Rampa de acesso à sala é o critério mais raro, independentemente do porte.')
 
 
     with col2:
-      with st.container(border=True):
-        st.subheader('Acessibilidade × Categoria do exibidor')
-        
+      with st.container(border=True):        
         plot_custom_grouped_bar_chart(
           df=df_cat_acc_melt.dropna(),
           x='Categoria do exibidor',
@@ -117,27 +110,15 @@ def section(df_salas_complexos):
           y_title='% das salas com o recurso',
           x_offset='Atributo de acessibilidade',
           x_offset_title='Atributo de acessibilidade',
-          title='Proporção de salas com acessibilidade por categoria de exibidor (São Paulo, 2026)',
+          title='Proporção de salas com acessibilidade por categoria de exibidor (2026)',
           x_scale_sort=ordem_categorias,
         )
-        st.caption('Salas de exibidores sem grupo têm os menores percentuais de banheiros acessíveis, assentos para cadeirantes e rampas. Exibidores públicos se destacam pela rampa de acesso à sala, mas têm banheiros acessíveis em menor proporção que os privados.')
+        st.text('Salas de exibidores sem grupo têm os menores percentuais de banheiros acessíveis, assentos para cadeirantes e rampas. Exibidores públicos se destacam pela rampa de acesso à sala, mas têm banheiros acessíveis, assentos de mobilidade reduzida e obesidade em menor proporção que os privados.')
 
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
-    # ---------------------------------------------------------------------------
-    # (1b) Categoria de exibidor x Acessibilidade (São Paulo, em funcionamento)
-    # ---------------------------------------------------------------------------
     with col1:
       with st.container(border=True):
-        
-        # ---------------------------------------------------------------------------
-        # (3a) Proporção real de assentos acessíveis por categoria (quantitativo)
-        # ---------------------------------------------------------------------------
-        st.subheader('Proporção real de assentos acessíveis por categoria de exibidor')
-
-        # Diferente do item 1b (presença SIM/NÃO), aqui usa-se as contagens efetivas:
-        # quantos dos assentos totais da categoria são destinados a PcD (cadeirantes,
-        # mobilidade reduzida e obesidade).
         df_accel_cat = df_acc_sp_cat.groupby('Categoria do exibidor', observed=True).apply(
           lambda g: pd.Series({
             'Assentos acessíveis': (
@@ -161,23 +142,18 @@ def section(df_salas_complexos):
               tooltip=['Categoria do exibidor', 'Assentos acessíveis', 'Total de assentos', 'Proporção de assentos acessíveis (%)'],
             )
             .properties(
-              height=420,
+              height=500,
               title=alt.TitleParams(
-                text='Proporção real dos assentos acessíveis, por categoria de exibidor (São Paulo, 2026)',
-                anchor='middle',
+                text='Proporção real dos assentos acessíveis por categoria de exibidor (2026)',
+                anchor='start',
               ),
             )
         )
         st.altair_chart(bar_prop_cat)
-        st.caption('Mede a quantidade efetiva de assentos acessíveis em relação ao total, não apenas se a oferta existe. Na proporção real, exibidores públicos destinam a menor fração de seus assentos a esse público, mesmo tendo boa presença de rampas (item 1b).')
+        st.caption('Mede a quantidade efetiva de assentos acessíveis em relação ao total, não apenas se a oferta existe. Na proporção real, exibidores públicos destinam a menor fração de seus assentos a esse público, mesmo tendo boa presença de rampas.')
 
     with col2:
-      with st.container(border=True):
-        # ---------------------------------------------------------------------------
-        # (3c) Índice composto de acessibilidade por sala (heatmap por categoria)
-        # ---------------------------------------------------------------------------
-        st.subheader('Índice composto de acessibilidade por sala')
-      
+      with st.container(border=True):      
         df_acc_salas = df_acc_sp_cat.copy()
         df_acc_salas['Índice (0-6)'] = df_acc_salas[criterios_porte].sum(axis=1)
       
@@ -186,7 +162,6 @@ def section(df_salas_complexos):
           ['Privado', 'Público', 'Independente', 'Sem grupo']
         )]
       
-        # Conta quantas salas de cada categoria pontuam em cada índice (0-6).
         df_indice_heatmap = (
           df_acc_salas_hm.groupby(['Categoria do exibidor', 'Índice (0-6)'])
             .size()
@@ -215,8 +190,8 @@ def section(df_salas_complexos):
               width={'step': 70},
               height={'step': 70},
               title=alt.TitleParams(
-                text='Distribuição do índice composto de acessibilidade por categoria de exibidor (São Paulo, 2026)',
-                anchor='middle',
+                text='Distribuição do índice composto de acessibilidade por categoria de exibidor (2026)',
+                anchor='start',
               ),
             )
         )
@@ -233,11 +208,8 @@ def section(df_salas_complexos):
         st.text('Há apenas uma sala em São Paulo que possui todos os requisitos de acessibilidade')
         st.dataframe(df_salas_acessibilidade_sp[criterio_1 & criterio_2 & criterio_3 & criterio_4 & criterio_5 & criterio_6], hide_index=True)
 
+  st.subheader('Acessibilidade e vulnerabilidade social por distrito no município de São Paulo')
   with st.container(border=True):
-    # ---------------------------------------------------------------------------
-    # (4) Acessibilidade x Vulnerabilidade social (IPVS 2022) por distrito de SP
-    # ---------------------------------------------------------------------------
-    st.subheader('Acessibilidade × Vulnerabilidade social por distrito')
 
     # Mapeia o bairro (informal) registrado na ANCINE para o distrito oficial do
     # município (recorte do IPVS 2022, SEADE), que é a unidade de referência do índice.
@@ -282,13 +254,13 @@ def section(df_salas_complexos):
         .properties(
           height=460,
           title=alt.TitleParams(
-            text='Oferta acessível de cinema por distrito × vulnerabilidade social (São Paulo, 2026)',
-            anchor='middle',
+            text='Oferta acessível de cinema por distrito por vulnerabilidade social (2026)',
+            anchor='start',
           ),
         )
     )
     st.altair_chart(bubble_vuln)
-    st.caption('Cada bolha é um distrito: eixo X é a parcela da população em grupos de alta vulnerabilidade (IPVS 2022, grupos 5-6); eixo Y, o índice médio de acessibilidade das salas em funcionamento; o tamanho, o número de salas. Distritos com alta vulnerabilidade tendem a concentrar poucas salas — e, em geral, de menor acessibilidade. Nove dos distritos mais vulneráveis não têm nenhuma sala de cinema: Jardim Ângela, Grajaú, Parelheiros, Pedreira, Brasilândia, Lajeado, Jardim Helena, Perus e Marsilac.')
+    st.caption('Cada bolha é um distrito: eixo X é a parcela da população em grupos de alta vulnerabilidade (IPVS 2022, grupos 5-6); eixo Y, o índice médio de acessibilidade das salas em funcionamento; o tamanho, o número de salas. Distritos com alta vulnerabilidade tendem a concentrar poucas salas — e, em geral, de menor acessibilidade.')
 
     distritos_sem_sala = sorted(
       {d for d in IPVS_DISTRITOS if IPVS_DISTRITOS[d][0] >= 40} - set(df_vuln_agg['Distrito'])
@@ -301,10 +273,7 @@ def section(df_salas_complexos):
 
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
-    
-    # ---------------------------------------------------------------------------
-    # (6) Diagnóstico de acessibilidade por UF (ranking)
-    # ---------------------------------------------------------------------------
+
     df_uf = df_salas_complexos[df_salas_complexos['SITUACAO_SALA'] == 'EM FUNCIONAMENTO'].copy()
 
     for col in ['ASSENTOS_CADEIRANTES', 'ASSENTOS_MOBILIDADE_REDUZIDA', 'ASSENTOS_OBESIDADE']:
@@ -354,11 +323,11 @@ def section(df_salas_complexos):
           height={ 'step': 22 },
           title=alt.TitleParams(
             text='Ranking dos estados por índice médio de acessibilidade das salas em funcionamento (2026)',
-            anchor='middle',
+            anchor='start',
           ),
         )
     )
-    # Coroplético: intensidade da cor dos estados conforme o índice médio
+
     with open("assets/brazil-states.geojson", "r") as file:
       geojson_uf = json.load(file)
 
@@ -412,8 +381,8 @@ def section(df_salas_complexos):
           width=760,
           height=620,
           title=alt.TitleParams(
-            text='Média de acessibilidade por estado (salas em funcionamento, 2026)',
-            anchor='middle',
+            text='Média de acessibilidade de salas em funcionamento por estado (2026)',
+            anchor='start',
           ),
         )
     )
@@ -421,8 +390,16 @@ def section(df_salas_complexos):
     with col1:
       with st.container(border=True):
         st.altair_chart(choropleth_uf)
+        st.caption(
+          'Mapa do Brasil colorido pela média de acessibilidade das salas em funcionamento '
+          'de cada estado (índice composto 0-6, um ponto por recurso: assentos para cadeirantes, '
+          'mobilidade reduzida, obesidade, rampa nos assentos, rampa de acesso à sala e banheiros '
+          'acessíveis). Tons mais quentes indicam estados com cobertura média maior; estados sem '
+          'sala em funcionamento ou sem dado ficam sem preenchimento. Roraima lidera (4,85) e '
+          'o Acre tem a menor média (2,43).'
+        )
 
     with col2:
       with st.container(border=True):
         st.altair_chart(heatmap_uf)
-        st.caption('Ranking das UFs pelo índice composto médio (0-6, um ponto por recurso: assentos para cadeirantes, mobilidade reduzida, obesidade, rampa nos assentos, rampa de acesso à sala e banheiros acessíveis), considerando apenas salas em funcionamento. Cada célula é o percentual de salas da UF que atende ao critério; quanto mais escura, maior a cobertura. As UFs estão ordenadas pelo índice composto médio — no topo Roraima (4,85) e no fim Acre (2,43). O líder é Roraima (4,85) e o último, Acre (2,43). A variância é maior nos critérios mais raros: rampa de acesso à sala (de 0% no Acre a 48,5% no Mato Grosso) e banheiros acessíveis (de 37% em Tocantins a 100% no Acre).')
+        st.caption('Ranking das UFs pelo índice composto médio (0-6, um ponto por recurso: assentos para cadeirantes, mobilidade reduzida, obesidade, rampa nos assentos, rampa de acesso à sala e banheiros acessíveis), considerando apenas salas em funcionamento. Cada célula é o percentual de salas da UF que atende ao critério; quanto mais quente, maior a cobertura. As UFs estão ordenadas pelo índice composto médio — no topo Roraima (4,85) e no fim Acre (2,43). O líder é Roraima (4,85) e o último, Acre (2,43). A variância é maior nos critérios mais raros: rampa de acesso à sala (de 0% no Acre a 48,5% no Mato Grosso) e banheiros acessíveis (de 37% em Tocantins a 100% no Acre).')
