@@ -1,6 +1,10 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+
+from lib.getters import uf_capitais_brasileiras
+from lib.getters import capitais_brasileiras
+
 from charts.bubble import plot_custom_bubble_chart
 from charts.brazil_map import plot_custom_brazil_map
 from charts.strip_jitter import plot_custom_strip_jitter_chart
@@ -67,15 +71,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
 
     with col1:
       with st.container(border=True):
-        capitais_brasileiras = [
-          'RIO BRANCO', 'MACEIÓ', 'MACAPÁ', 'MANAUS', 'SALVADOR', 'FORTALEZA',
-          'BRASÍLIA', 'VITÓRIA', 'GOIÂNIA', 'SÃO LUÍS', 'CUIABÁ', 'CAMPO GRANDE',
-          'BELO HORIZONTE', 'BELÉM', 'JOÃO PESSOA', 'CURITIBA', 'RECIFE',
-          'TERESINA', 'RIO DE JANEIRO', 'NATAL', 'PORTO ALEGRE', 'PORTO VELHO',
-          'BOA VISTA', 'FLORIANÓPOLIS', 'SÃO PAULO', 'ARACAJU', 'PALMAS'
-        ]
-
-        df_capitais = df_media_salas_por_complexo_cidade[df_media_salas_por_complexo_cidade['Município'].isin(capitais_brasileiras)].copy()
+        lista_capitais = capitais_brasileiras()
+        df_capitais = df_media_salas_por_complexo_cidade[df_media_salas_por_complexo_cidade['Município'].isin(lista_capitais)].copy()
         df_capitais['É a capital'] = df_capitais['Município'].eq('SÃO PAULO')
         df_capitais = df_capitais.sort_values('Média de salas por complexo')
 
@@ -110,20 +107,12 @@ def section(df_complexos_evolucao, df_salas_complexos):
           'PALMAS': (-10.212, -48.361),
         }
 
-        uf_das_capitais = {
-          'RIO BRANCO': 'AC', 'MACEIÓ': 'AL', 'MACAPÁ': 'AP', 'MANAUS': 'AM',
-          'SALVADOR': 'BA', 'FORTALEZA': 'CE', 'BRASÍLIA': 'DF', 'VITÓRIA': 'ES',
-          'GOIÂNIA': 'GO', 'SÃO LUÍS': 'MA', 'CUIABÁ': 'MT', 'CAMPO GRANDE': 'MS',
-          'BELO HORIZONTE': 'MG', 'BELÉM': 'PA', 'JOÃO PESSOA': 'PB', 'CURITIBA': 'PR',
-          'RECIFE': 'PE', 'TERESINA': 'PI', 'RIO DE JANEIRO': 'RJ', 'NATAL': 'RN',
-          'PORTO ALEGRE': 'RS', 'PORTO VELHO': 'RO', 'BOA VISTA': 'RR',
-          'FLORIANÓPOLIS': 'SC', 'SÃO PAULO': 'SP', 'ARACAJU': 'SE', 'PALMAS': 'TO',
-        }
+        dict_uf_capitais = uf_capitais_brasileiras()
 
         # Anexa latitude, longitude e UF à tabela das capitais.
         df_capitais['Latitude'] = df_capitais['Município'].map(lambda m: coordenadas_capitais[m][0])
         df_capitais['Longitude'] = df_capitais['Município'].map(lambda m: coordenadas_capitais[m][1])
-        df_capitais['UF'] = df_capitais['Município'].map(uf_das_capitais)
+        df_capitais['UF'] = df_capitais['Município'].map(dict_uf_capitais)
 
         plot_custom_brazil_map(
           df=df_capitais,
