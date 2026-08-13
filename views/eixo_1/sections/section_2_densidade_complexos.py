@@ -1,6 +1,7 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
+import json
 
 from lib.getters import uf_capitais_brasileiras
 from lib.getters import capitais_brasileiras
@@ -77,35 +78,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
         df_capitais = df_capitais.sort_values('Média de salas por complexo')
 
         # Coordenadas (latitude, longitude) aproximadas de cada capital brasileira.
-        coordenadas_capitais = {
-          'RIO BRANCO': (-9.974, -67.806),
-          'MACEIÓ': (-9.666, -35.735),
-          'MACAPÁ': (0.035, -51.071),
-          'MANAUS': (-3.116, -60.028),
-          'SALVADOR': (-12.966, -38.501),
-          'FORTALEZA': (-3.717, -38.543),
-          'BRASÍLIA': (-15.794, -47.883),
-          'VITÓRIA': (-20.315, -40.313),
-          'GOIÂNIA': (-16.682, -49.251),
-          'SÃO LUÍS': (-2.539, -44.286),
-          'CUIABÁ': (-15.601, -56.098),
-          'CAMPO GRANDE': (-20.470, -54.620),
-          'BELO HORIZONTE': (-19.917, -43.935),
-          'BELÉM': (-1.456, -48.504),
-          'JOÃO PESSOA': (-7.115, -34.878),
-          'CURITIBA': (-25.428, -49.273),
-          'RECIFE': (-8.048, -34.877),
-          'TERESINA': (-5.089, -42.802),
-          'RIO DE JANEIRO': (-22.907, -43.173),
-          'NATAL': (-5.794, -35.195),
-          'PORTO ALEGRE': (-30.033, -51.230),
-          'PORTO VELHO': (-8.761, -63.873),
-          'BOA VISTA': (2.820, -60.673),
-          'FLORIANÓPOLIS': (-27.596, -48.548),
-          'SÃO PAULO': (-23.556, -46.640),
-          'ARACAJU': (-10.947, -37.073),
-          'PALMAS': (-10.212, -48.361),
-        }
+        with open("assets/coordenadas-capitais.json", "r") as file:
+          coordenadas_capitais = json.load(file)
 
         dict_uf_capitais = uf_capitais_brasileiras()
 

@@ -13,6 +13,7 @@ from lib.checkers import checa_cnpj
 from charts.bar import plot_custom_ranking_bar_chart
 from charts.hist import plot_custom_histogram_chart
 from charts.brazil_map import plot_custom_brazil_map
+from charts.brazil_map import plot_custom_choropleth_brazil_map
 
 # Identificar quantas obras audiovisuais são produzidas por empresas sediadas no município vs. por empresas de outros locais.
 # Mapear produtoras independentes paulistanas que não acessam mecanismos federais de fomento – alvo potencial para um edital municipal de apoio ao audiovisual.
@@ -150,35 +151,8 @@ def section(df_produtoras_independentes, df_produtores):
   df_capitais['MUNICIPIO'] = df_capitais['CAPITAL_NORM'].map(capitais_norm)
   df_capitais = df_capitais.drop(columns=['CAPITAL_NORM'])
 
-  coordenadas_capitais = {
-    'RIO BRANCO': (-9.974, -67.806),
-    'MACEIÓ': (-9.666, -35.735),
-    'MACAPÁ': (0.035, -51.071),
-    'MANAUS': (-3.116, -60.028),
-    'SALVADOR': (-12.966, -38.501),
-    'FORTALEZA': (-3.717, -38.543),
-    'BRASÍLIA': (-15.794, -47.883),
-    'VITÓRIA': (-20.315, -40.313),
-    'GOIÂNIA': (-16.682, -49.251),
-    'SÃO LUÍS': (-2.539, -44.286),
-    'CUIABÁ': (-15.601, -56.098),
-    'CAMPO GRANDE': (-20.470, -54.620),
-    'BELO HORIZONTE': (-19.917, -43.935),
-    'BELÉM': (-1.456, -48.504),
-    'JOÃO PESSOA': (-7.115, -34.878),
-    'CURITIBA': (-25.428, -49.273),
-    'RECIFE': (-8.048, -34.877),
-    'TERESINA': (-5.089, -42.802),
-    'RIO DE JANEIRO': (-22.907, -43.173),
-    'NATAL': (-5.794, -35.195),
-    'PORTO ALEGRE': (-30.033, -51.230),
-    'PORTO VELHO': (-8.761, -63.873),
-    'BOA VISTA': (2.820, -60.673),
-    'FLORIANÓPOLIS': (-27.596, -48.548),
-    'SÃO PAULO': (-23.556, -46.640),
-    'ARACAJU': (-10.947, -37.073),
-    'PALMAS': (-10.212, -48.361),
-  }
+  with open("assets/coordenadas-capitais.json", "r") as file:
+    coordenadas_capitais = json.load(file)
 
   df_capitais['Latitude'] = df_capitais['MUNICIPIO'].map(lambda m: coordenadas_capitais[m][0])
   df_capitais['Longitude'] = df_capitais['MUNICIPIO'].map(lambda m: coordenadas_capitais[m][1])
@@ -237,17 +211,6 @@ def section(df_produtoras_independentes, df_produtores):
       .sort_values('TOTAL_PRODUTORAS', ascending=False)
   )
 
-  with open("assets/brazil-states.geojson", "r") as file:
-    geojson_uf = json.load(file)
-
-  df_uf_join = df_uf_produtoras[['UF', 'TOTAL_PRODUTORAS']].set_index('UF')
-  for feat in geojson_uf['features']:
-    sigla = feat['properties']['sigla']
-    if sigla in df_uf_join.index:
-      feat['properties']['TOTAL_PRODUTORAS'] = int(df_uf_join.loc[sigla, 'TOTAL_PRODUTORAS'])
-    else:
-      feat['properties']['TOTAL_PRODUTORAS'] = None
-
   # Barra de ranking: total de obras por estado
   df_uf_obras = (
     df_produtividade.groupby('UF')['QTD_OBRAS']
@@ -262,49 +225,14 @@ def section(df_produtoras_independentes, df_produtores):
     
     with col1:
       with st.container(border=True):
-        choropleth_layer = (
-          alt.Chart(alt.Data(values=geojson_uf, format=alt.DataFormat(property='features')))
-            .mark_geoshape(stroke='#b6bfc9', strokeWidth=0.7)
-            .encode(
-              color=alt.Color(
-                'properties.TOTAL_PRODUTORAS:Q',
-                title='Produtoras independentes',
-                scale=alt.Scale(scheme='inferno'),
-              ),
-              tooltip=[
-                alt.Tooltip('properties.name:N', title='Estado'),
-                alt.Tooltip('properties.TOTAL_PRODUTORAS:Q', title='Produtoras'),
-              ],
-            )
+        plot_custom_choropleth_brazil_map(
+          df=df_uf_produtoras,
+          geojson_path='assets/brazil-states.geojson',
+          uf_col='UF',
+          value_col='TOTAL_PRODUTORAS',
+          value_title='Produtoras independentes',
+          title='Produtoras independentes por estado',
         )
-      
-        # Camada fantasma (grid com subset separado) para impedir que o Altair eleve o
-        # GeoJSON ao `data` de nível superior do spec. Se isso acontecer, o Streamlit
-        # extrai `data.values`, descarta o `format` do GeoJSON e serializa o
-        # FeatureCollection como Arrow — fazendo o mapa renderizar sem nenhum estado.
-        dummy_grid = pd.DataFrame({'x': [0.0], 'y': [0.0]})
-        grid_layer = (
-          alt.Chart(dummy_grid)
-            .mark_point(opacity=0, size=0)
-            .encode(
-              x=alt.X('x:Q', axis=None),
-              y=alt.Y('y:Q', axis=None),
-            )
-        )
-      
-        choropleth_uf = (
-          alt.layer(choropleth_layer, grid_layer)
-            .project(type='equalEarth')
-            .properties(
-              width=760,
-              height=620,
-              title=alt.TitleParams(
-                text='Produtoras independentes por estado',
-                anchor='start',
-              ),
-            )
-        )
-        st.altair_chart(choropleth_uf)
         st.caption(
           'Mapa do Brasil colorido pelo número de produtoras independentes registradas em cada UF. '
           'Tons mais quentes indicam maior quantidade de produtoras; São Paulo (SP) lidera, seguido '

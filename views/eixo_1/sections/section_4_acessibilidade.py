@@ -3,7 +3,10 @@ import altair as alt
 import pandas as pd
 import json
 import unicodedata
+
 from charts.bar import plot_custom_grouped_bar_chart
+from charts.brazil_map import plot_custom_choropleth_brazil_map
+
 
 def section(df_salas_complexos):
   st.header('Acessibilidade física')
@@ -328,68 +331,20 @@ def section(df_salas_complexos):
         )
     )
 
-    with open("assets/brazil-states.geojson", "r") as file:
-      geojson_uf = json.load(file)
-
-    df_uf_join = df_uf_agg[['UF_COMPLEXO', 'Índice médio', 'Salas']].set_index('UF_COMPLEXO')
-    for feat in geojson_uf['features']:
-      sigla = feat['properties']['sigla']
-      if sigla in df_uf_join.index:
-        feat['properties']['Índice médio'] = round(float(df_uf_join.loc[sigla, 'Índice médio']), 2)
-        feat['properties']['Salas'] = int(df_uf_join.loc[sigla, 'Salas'])
-      else:
-        feat['properties']['Índice médio'] = None
-        feat['properties']['Salas'] = None
-
-    choropleth_layer = (
-      alt.Chart(alt.Data(values=geojson_uf, format=alt.DataFormat(property='features')))
-        .mark_geoshape(stroke='#b6bfc9', strokeWidth=0.7)
-        .encode(
-          color=alt.Color(
-            'properties.Índice médio:Q',
-            title='Índice médio (0-6)',
-            scale=alt.Scale(scheme='inferno', domain=[0, 6]),
-          ),
-          tooltip=[
-            alt.Tooltip('properties.name:N', title='Estado'),
-            alt.Tooltip('properties.Índice médio:Q', title='Índice médio', format='.2f'),
-            alt.Tooltip('properties.Salas:Q', title='Salas em funcionamento'),
-          ],
-        )
-    )
-
-    # Camada fantasma (grid com subset separado) para impedir que o Altair eleve o
-    # GeoJSON ao `data` de nível superior do spec. Se isso acontecer, o Streamlit
-    # extrai `data.values`, descarta o `format` do GeoJSON e serializa o
-    # FeatureCollection como Arrow (vega_charts.py:_marshall_chart_data) — o que
-    # faz o mapa renderizar sem nenhum estado. Manter o GeoJSON dentro da layer
-    # preserva `format: {property: 'features'}`, mesmo padrão de plot_custom_brazil_map.
-    dummy_grid = pd.DataFrame({'x': [0.0], 'y': [0.0]})
-    grid_layer = (
-      alt.Chart(dummy_grid)
-        .mark_point(opacity=0, size=0)
-        .encode(
-          x=alt.X('x:Q', axis=None),
-          y=alt.Y('y:Q', axis=None),
-        )
-    )
-
-    choropleth_uf = (
-      alt.layer(choropleth_layer, grid_layer)
-        .project(type='equalEarth')
-        .properties(
-          width=760,
-          height=620,
-          title=alt.TitleParams(
-            text='Média de acessibilidade de salas em funcionamento por estado (2026)',
-            anchor='start',
-          ),
-        )
-    )
     
     with col1:
       with st.container(border=True):
-        st.altair_chart(choropleth_uf)
+        df_uf_agg_map = df_uf_agg.rename(columns={'UF_COMPLEXO': 'UF'})
+        plot_custom_choropleth_brazil_map(
+          df=df_uf_agg_map,
+          geojson_path='assets/brazil-states.geojson',
+          uf_col='UF',
+          value_col='Índice médio',
+          value_title='Índice médio (0-6)',
+          title='Média de acessibilidade de salas em funcionamento por estado (2026)',
+          color_domain=[0, 6],
+          tooltip_extra={'Salas': 'Salas em funcionamento'},
+        )
         st.caption(
           'Mapa do Brasil colorido pela média de acessibilidade das salas em funcionamento '
           'de cada estado (índice composto 0-6, um ponto por recurso: assentos para cadeirantes, '
