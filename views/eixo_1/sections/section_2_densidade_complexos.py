@@ -261,6 +261,7 @@ def section(df_complexos_evolucao, df_salas_complexos):
           color='Porte',
           color_title='Porte do complexo',
           title='Distribuição dos complexos por porte e quantidade de salas no município de São Paulo (2026)',
+          tooltip_fields=['NOME_COMPLEXO', 'BAIRRO_COMPLEXO', 'QUANTIDADE_DE_SALAS']
         )
         st.caption('Pontos com mesmo número de salas foram levemente espalhados no eixo X (jitter) apenas para evitar sobreposição. Passe o mouse para ver o nome, bairro e nº de salas de cada complexo.')
         

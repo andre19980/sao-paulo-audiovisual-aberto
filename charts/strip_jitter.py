@@ -2,9 +2,6 @@ import streamlit as st
 import altair as alt
 
 def plot_custom_strip_jitter_chart(df, y, y_title, x, x_title, color, color_title, title, height=480, tooltip_fields=None):
-  if tooltip_fields is None:
-    tooltip_fields = ['NOME_COMPLEXO', 'BAIRRO_COMPLEXO', y]
-
   chart = (
     alt.Chart(df)
       .transform_calculate(
