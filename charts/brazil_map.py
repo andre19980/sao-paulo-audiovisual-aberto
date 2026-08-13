@@ -2,7 +2,7 @@ import streamlit as st
 import altair as alt
 import json
 
-def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, color_title, title, lat_col='Latitude', lon_col='Longitude', color_scale_domain=None, size_scale_domain=None):
+def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, color_title, title, lat_col='Latitude', lon_col='Longitude', color_scale_domain=None, size_scale_domain=None, tooltip_fields=None):
   """
   Mapa coroplético do Brasil com as capitais sobrepostas.
 
@@ -51,6 +51,9 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
   if color_scale_domain is not None:
     color_scale_kwargs['domain'] = color_scale_domain
 
+  if tooltip_fields is None:
+    tooltip_fields = [label, color, size]
+
   points = (
     alt.Chart(df)
       .mark_circle(opacity=0.9, stroke='white', strokeWidth=1)
@@ -59,7 +62,7 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
         latitude=alt.Latitude(f'{lat_col}:Q'),
         size=alt.Size(f'{size}:Q', title=size_title, scale=alt.Scale(**size_scale_kwargs)),
         color=alt.Color(f'{color}:Q', title=color_title, scale=alt.Scale(**color_scale_kwargs)),
-        tooltip=[label, color, size],
+        tooltip=tooltip_fields,
       )
   )
 

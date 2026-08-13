@@ -8,8 +8,8 @@ eixo_1_page = st.Page(
   icon=":material/map:"
 )
 eixo_2_page = st.Page(
-  "views/eixo_2/eixo_2.py",
-  title="Eixo 2: Análise da Demografia",
+  "views/eixo_2/eixo_2_fomento_producao_local_independente.py",
+  title="Eixo 2: Fomento à Produção Local e Independente",
   icon=":material/add_circle:"
 )
 
