@@ -1,10 +1,9 @@
 import pandas as pd
 import streamlit as st
-import altair as alt
 
 from lib.normalizers import converte_moeda, normaliza_cnpj, normaliza_municipio
 
-from charts.bar import plot_custom_ranking_bar_chart
+from charts.bar import plot_custom_layered_bar_chart, plot_custom_ranking_bar_chart
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 from charts.bubble import plot_custom_bubble_chart
 from charts.pie import plot_custom_pie_chart
@@ -193,25 +192,18 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
       ordem_mec = df_mec_sp.sort_values('Total captado BR', ascending=False)['Mecanismo'].tolist()
       
       with st.container(border=True):
-        layered_chart = (
-          alt.Chart(df_mec_sp_long)
-            .mark_bar(opacity=0.7)
-            .encode(
-              y=alt.Y('Mecanismo:N', title=None, sort=ordem_mec, axis=alt.Axis(labelLimit=180)),
-              x=alt.X('Total captado:Q', title='Total captado (R$)').stack(None),
-              color=alt.Color('Escopo:N', title=None),
-              tooltip=[
-                'Mecanismo',
-                'Escopo',
-                alt.Tooltip('Total captado:Q', title='Total captado (R$)', format=',.0f'),
-              ],
-            )
-            .properties(
-              height={'step': 26},
-              title=alt.TitleParams(text='Parcela de São Paulo no total de cada mecanismo', anchor='start'),
-            )
+        plot_custom_layered_bar_chart(
+          df=df_mec_sp_long,
+          x='Total captado',
+          x_title='Total captado (R$)',
+          y='Mecanismo',
+          y_title=None,
+          color='Escopo',
+          color_title=None,
+          title='Parcela de São Paulo no total de cada mecanismo',
+          sort_by='Total captado',
+          label_limit=180,
         )
-        st.altair_chart(layered_chart)
         st.caption(
           'Duas barras sobrepostas por mecanismo: a de fundo (Brasil) mostra o total captado '
           'nacional e a de frente (São Paulo), quanto desse total veio de proponentes paulistanos. '
