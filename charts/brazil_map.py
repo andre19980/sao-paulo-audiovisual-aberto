@@ -3,7 +3,7 @@ import altair as alt
 import json
 import pandas as pd
 
-def plot_custom_choropleth_brazil_map(df, geojson_path, uf_col, value_col, value_title, title, color_scheme='inferno', color_domain=None, width=760, height=620, tooltip_extra=None):
+def plot_custom_choropleth_brazil_map(df, geojson_path, uf_col, value_col, value_title, title, color_scheme='inferno', color_domain=None, width=760, height=620, tooltip_extra=None, log_color=False):
   """Mapa coroplético do Brasil colorindo cada estado por um valor agregado.
 
   Faz o join do dataframe (uma linha por UF) com as features do GeoJSON pela
@@ -33,6 +33,10 @@ def plot_custom_choropleth_brazil_map(df, geojson_path, uf_col, value_col, value
   tooltip_extra : dict[str, str] | None
     Colunas adicionais do dataframe para exibir no tooltip, mapeando
     "nome da coluna" -> "título" (default None).
+  log_color : bool
+    Usar escala logarítmica na cor (default False). Recomendado quando os
+    valores têm ordens de grandeza muito diferentes (ex.: bilhões vs milhões),
+    criando nuances entre estados de menor magnitude.
   """
   with open(geojson_path, 'r', encoding='utf-8') as file:
     geojson_uf = json.load(file)
@@ -52,6 +56,8 @@ def plot_custom_choropleth_brazil_map(df, geojson_path, uf_col, value_col, value
   scale_kwargs = {'scheme': color_scheme}
   if color_domain is not None:
     scale_kwargs['domain'] = color_domain
+  if log_color:
+    scale_kwargs['type'] = 'log'
 
   tooltip_fields = [
     alt.Tooltip('properties.name:N', title='Estado'),

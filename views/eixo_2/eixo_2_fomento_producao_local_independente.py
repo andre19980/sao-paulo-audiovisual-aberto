@@ -40,15 +40,19 @@ st.write(df_projetos_renfisc)
 
 tab1, tab2, tab3, tab4 = st.tabs([
   'Produtoras independentes e obras',
-  'Projeto com renúncia fiscal',
+  'Projetos com renúncia fiscal',
   'Exibidores e operação',
   'Acessibilidade'
 ])
 
+# Identificar quantas obras audiovisuais são produzidas por empresas sediadas no município vs. por empresas de outros locais.
+# Mapear produtoras independentes paulistanas que não acessam mecanismos federais de fomento – alvo potencial para um edital municipal de apoio ao audiovisual.
+# Cruzar dados de captação via leis de incentivo (ex.: Art. 1º, 3º, 18 da Lei do Audiovisual) com o município do proponente para avaliar se São Paulo está sendo contemplada adequadamente.
+
 with tab1:
   section_1(df_produtoras_independentes, df_produtores)
 with tab2:
-  section_2(df_projetos_renfisc)
+  section_2(df_projetos_renfisc, df_produtoras_independentes)
 # with tab3:
 #   section_3(df_salas_complexos)
 # with tab4:

@@ -1,7 +1,5 @@
 import streamlit as st
 
-import streamlit as st
-
 eixo_1_page = st.Page(
   "views/eixo_1/eixo_1_mapeamento_oferta_cultural.py",
   title="Eixo 1: Mapeamento da Oferta Cultural",
@@ -14,5 +12,5 @@ eixo_2_page = st.Page(
 )
 
 pg = st.navigation([eixo_1_page, eixo_2_page])
-st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:")
+st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:", layout="wide")
 pg.run()

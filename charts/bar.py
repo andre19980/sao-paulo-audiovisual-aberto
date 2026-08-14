@@ -1,5 +1,6 @@
 import streamlit as st
 import altair as alt
+import pandas as pd
 
 def plot_custom_grouped_bar_chart(df, x, x_title, y, y_title, x_offset, x_offset_title, title, x_scale_sort=None):
   chart = (
@@ -21,7 +22,7 @@ def plot_custom_grouped_bar_chart(df, x, x_title, y, y_title, x_offset, x_offset
 
   return
 
-def plot_custom_ranking_bar_chart(df, x, x_title, y, y_title, title, tooltip=None, color=None, color_scheme='blues', label_limit=200, step=22):
+def plot_custom_ranking_bar_chart(df, x, x_title, y, y_title, title, tooltip=None, color=None, color_scheme='blues', label_limit=200, step=22, log_x=False, tooltip_format=',.0f'):
   """Barra horizontal de ranking: categorias no eixo Y ordenadas pelo valor de 'x'.
 
   Parâmetros
@@ -48,9 +49,24 @@ def plot_custom_ranking_bar_chart(df, x, x_title, y, y_title, title, tooltip=Non
     Limite de largura dos rótulos do eixo Y.
   step : int
     Altura por barra (padding do eixo Y).
+  log_x : bool
+    Usar escala logarítmica no eixo X (default False).
+  tooltip_format : str
+    Formato (d3-format) aplicado às colunas numéricas do tooltip
+    (default ',.0f' = separador de milhar). Colunas de texto ficam intactas.
   """
   if tooltip is None:
     tooltip = [y, x]
+
+  # Aplica o formato às colunas numéricas do tooltip (texto fica intacto).
+  tooltip_fields = []
+  for campo in tooltip:
+    if isinstance(campo, alt.Tooltip):
+      tooltip_fields.append(campo)
+    elif campo in df.columns and pd.api.types.is_numeric_dtype(df[campo]):
+      tooltip_fields.append(alt.Tooltip(f'{campo}:Q', format=tooltip_format))
+    else:
+      tooltip_fields.append(campo)
 
   color_encoding = (
     alt.Color(f'{color}:Q', legend=None, scale=alt.Scale(scheme=color_scheme))
@@ -62,10 +78,10 @@ def plot_custom_ranking_bar_chart(df, x, x_title, y, y_title, title, tooltip=Non
     alt.Chart(df)
       .mark_bar(cornerRadiusEnd=3)
       .encode(
-        x=alt.X(f'{x}:Q', title=x_title),
+        x=alt.X(f'{x}:Q', title=x_title, scale=alt.Scale(type='log') if log_x else alt.Undefined),
         y=alt.Y(f'{y}:N', title=y_title, sort='-x', axis=alt.Axis(labelLimit=label_limit)),
         color=color_encoding,
-        tooltip=tooltip,
+        tooltip=tooltip_fields,
       )
       .properties(
         height={'step': step},

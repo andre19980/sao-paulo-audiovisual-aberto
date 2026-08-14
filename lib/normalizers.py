@@ -1,3 +1,5 @@
+import unicodedata
+
 import pandas as pd
 import numpy as np
 
@@ -11,6 +13,11 @@ def normaliza_cnpj(cnpj):
   if len(cnpj_limpo) > 14 and cnpj_limpo.startswith('0'):
     cnpj_limpo = cnpj_limpo[1:]
   return cnpj_limpo
+
+def normaliza_municipio(municipio):
+  if pd.isna(municipio):
+    return np.nan
+  return unicodedata.normalize('NFD', str(municipio)).encode('ascii', 'ignore').decode().upper().strip()
 
 def converte_moeda(valor_str):
   if pd.isna(valor_str) or valor_str == '':

@@ -13,9 +13,6 @@ DATA_URLS = {
   'complexos_evolucao': 'https://dados.ancine.gov.br/dados-abertos/complexos-cinematograficos-evolucao-anual.csv'
 }
 
-# Set page settings
-st.set_page_config(layout="wide")
-
 st.title('Eixo 1 - Mapeamento da Oferta Cultural (Cinemas e Salas de Exibição)')
 
 df_salas_complexos = load_data(DATA_URLS['salas_de_exibicao_e_complexos'])

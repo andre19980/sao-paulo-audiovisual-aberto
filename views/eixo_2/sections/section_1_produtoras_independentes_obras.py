@@ -15,10 +15,6 @@ from charts.hist import plot_custom_histogram_chart
 from charts.brazil_map import plot_custom_brazil_map
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 
-# Identificar quantas obras audiovisuais são produzidas por empresas sediadas no município vs. por empresas de outros locais.
-# Mapear produtoras independentes paulistanas que não acessam mecanismos federais de fomento – alvo potencial para um edital municipal de apoio ao audiovisual.
-# Cruzar dados de captação via leis de incentivo (ex.: Art. 1º, 3º, 18 da Lei do Audiovisual) com o município do proponente para avaliar se São Paulo está sendo contemplada adequadamente.
-
 def section(df_produtoras_independentes, df_produtores):  
   produtoras_independentes_cnpj = df_produtoras_independentes['CNPJ'].apply(checa_cnpj)
   

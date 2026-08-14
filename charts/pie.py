@@ -1,7 +1,7 @@
 import streamlit as st
 import altair as alt
 
-def plot_custom_pie_chart(df, color, theta, title):
+def plot_custom_pie_chart(df, color, theta, title, inner_radius=50, outer_radius=120):
   base = (
     alt.Chart(df)
       .encode(
@@ -17,7 +17,7 @@ def plot_custom_pie_chart(df, color, theta, title):
       )
   )
 
-  pie = base.mark_arc(innerRadius=50, outerRadius=120)
+  pie = base.mark_arc(innerRadius=inner_radius, outerRadius=outer_radius)
 
   st.altair_chart(pie)
 
