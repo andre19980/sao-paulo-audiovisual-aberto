@@ -93,7 +93,7 @@ def plot_custom_ranking_bar_chart(df, x, x_title, y, y_title, title, tooltip=Non
 
   return
 
-def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title, title, sort_by=None, tooltip=None, label_limit=200, step=26, opacity=0.7, tooltip_format=',.0f'):
+def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title, title, sort_by=None, tooltip=None, label_limit=200, step=26, opacity=0.7, tooltip_format=',.0f', color_scheme=None):
   """Barra horizontal em camadas: categorias no eixo Y com barras sobrepostas por grupo.
 
   Cada categoria do eixo Y recebe uma barra por valor distinto da coluna 'color',
@@ -131,6 +131,8 @@ def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title
     Opacidade das barras (default 0.7).
   tooltip_format : str
     Formato (d3-format) das colunas numéricas no tooltip (default ',.0f').
+  color_scheme : str | None
+    Esquema de cor para os grupos (default None = paleta padrão do Altair).
   """
   if tooltip is None:
     tooltip = [y, color, x]
@@ -146,7 +148,14 @@ def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title
 
   y_encoding = alt.Y(f'{y}:N', title=y_title, axis=alt.Axis(labelLimit=label_limit))
   if sort_by is not None:
-    y_encoding = alt.Y(f'{y}:N', title=y_title, sort=df.sort_values(sort_by, ascending=False)[y].tolist(), axis=alt.Axis(labelLimit=label_limit))
+    # Em formato longo cada categoria aparece em várias linhas (ex.: Brasil/SP);
+    # deduplica após ordenar para gerar uma lista de ordem sem repetições.
+    ordem = df.sort_values(sort_by, ascending=False).drop_duplicates(y)[y].tolist()
+    y_encoding = alt.Y(f'{y}:N', title=y_title, sort=ordem, axis=alt.Axis(labelLimit=label_limit))
+
+  color_kwargs = {'title': color_title}
+  if color_scheme is not None:
+    color_kwargs['scale'] = alt.Scale(scheme=color_scheme)
 
   chart = (
     alt.Chart(df)
@@ -154,7 +163,7 @@ def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title
       .encode(
         y=y_encoding,
         x=alt.X(f'{x}:Q', title=x_title).stack(None),
-        color=alt.Color(f'{color}:N', title=color_title),
+        color=alt.Color(f'{color}:N', **color_kwargs),
         tooltip=tooltip_fields,
       )
       .properties(

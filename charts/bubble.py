@@ -1,8 +1,9 @@
 import streamlit as st
 import altair as alt
+import pandas as pd
 
-def plot_custom_bubble_chart(df, x, x_title, y, y_title, size, size_title, color, color_title, title, log_x=False, color_type='N', color_scheme=None, tooltip_fields=None, height=420, size_range=[50, 3000]):
-  color_kwargs = {'legend': alt.Legend(title=color_title)}
+def plot_custom_bubble_chart(df, x, x_title, y, y_title, size, size_title, color, color_title, title, log_x=False, color_type='N', color_scheme=None, tooltip_fields=None, height=420, size_range=[50, 3000], show_color_legend=True, tooltip_format=',.0f'):
+  color_kwargs = {'legend': alt.Legend(title=color_title) if show_color_legend else None}
   if color_type == 'Q':
     color_kwargs.update({
       'scale': alt.Scale(scheme=color_scheme or 'blues'),
@@ -13,6 +14,16 @@ def plot_custom_bubble_chart(df, x, x_title, y, y_title, size, size_title, color
   if tooltip_fields is None:
     tooltip_fields = [x, y, size, color]
 
+  # Aplica o formato às colunas numéricas do tooltip (texto e alt.Tooltip intactos).
+  formatted_tooltip = []
+  for campo in tooltip_fields:
+    if isinstance(campo, alt.Tooltip):
+      formatted_tooltip.append(campo)
+    elif campo in df.columns and pd.api.types.is_numeric_dtype(df[campo]):
+      formatted_tooltip.append(alt.Tooltip(f'{campo}:Q', format=tooltip_format))
+    else:
+      formatted_tooltip.append(campo)
+
   base = (
     alt.Chart(df)
       .mark_circle(opacity=0.6)
@@ -21,7 +32,7 @@ def plot_custom_bubble_chart(df, x, x_title, y, y_title, size, size_title, color
         y=alt.Y(f'{y}:Q', title=y_title),
         size=alt.Size(f'{size}:Q', title=size_title, scale=alt.Scale(range=size_range)),
         color=alt.Color(f'{color}:{color_type}', **color_kwargs),
-        tooltip=tooltip_fields
+        tooltip=formatted_tooltip
       )
       .properties(
         height=height,

@@ -8,6 +8,7 @@ from charts.brazil_map import plot_custom_choropleth_brazil_map
 from charts.bubble import plot_custom_bubble_chart
 from charts.heatmap import plot_custom_heatmap
 from charts.pie import plot_custom_pie_chart
+from charts.line import plot_custom_line_chart
 
 def section(df_projetos_renfisc, df_produtoras_independentes):
   # Normaliza o município do proponente
@@ -100,68 +101,70 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
       .reset_index()
       .sort_values('TOTAL_CAPTADO', ascending=False)
   )
-  with st.container(horizontal=True, border=True, width='content'):
-    plot_custom_choropleth_brazil_map(
-      df=df_uf_captado,
-      geojson_path='assets/brazil-states.geojson',
-      uf_col='UF_PROPONENTE',
-      value_col='TOTAL_CAPTADO',
-      value_title='Total captado (R$)',
-      title='Total captado por estado do proponente (renúncia fiscal)',
-      color_scheme='bluepurple',
-      log_color=True,
-    )
-    st.caption(
-      'Mapa do Brasil colorido pelo total captado via renúncia fiscal segundo o estado do '
-      'proponente. A escala logarítmica de cor cria nuances entre estados de portes muito '
-      'diferentes (SP e RJ captam bilhões, os demais milhões).'
-    )
+  with st.container(horizontal=True):
+    col1, col2 = st.columns([1, 1], gap='large', border=True)
     
-  # Participação de cada mecanismo de captação.
-  mecanismos = {
-    'Art. 1º': 'CAPTADO_ART1',
-    'Art. 1º-A': 'CAPTADO_ART1A',
-    'Art. 3º': 'CAPTADO_ART3',
-    'Art. 3º-A': 'CAPTADO_ART3A',
-    'Art. 18': 'CAPTADO_ART18',
-    'Art. 25': 'CAPTADO_ART25',
-    'Art. 39': 'CAPTADO_ART39',
-    'Funcines': 'CAPTADO_FUNCINES',
-    'Edital ANCINE': 'CAPTADO_EDITAL_ANCINE',
-    'Outros editais': 'CAPTADO_OUTROS_EDITAIS',
-    'PAR': 'CAPTADO_PAR',
-    'PAQ': 'CAPTADO_PAQ',
-    'Lei estadual': 'CAPTADO_LEI_ESTADUAL',
-    'Lei municipal': 'CAPTADO_LEI_MUNICIPAL',
-    'Outras fontes': 'CAPTADO_OUTRAS_FONTES',
-    'Contrapartida': 'CAPTADO_CONTRAPARTIDA',
-    'Conversão': 'CAPTADO_CONVERSAO',
-  }
-  df_mec = pd.DataFrame({
-    'Mecanismo': list(mecanismos.keys()),
-    'Total captado': [df_projetos_renfisc[col].sum() for col in mecanismos.values()],
-  }).sort_values('Total captado', ascending=False)
+    with col1:
+      plot_custom_choropleth_brazil_map(
+        df=df_uf_captado,
+        geojson_path='assets/brazil-states.geojson',
+        uf_col='UF_PROPONENTE',
+        value_col='TOTAL_CAPTADO',
+        value_title='Total captado (R$)',
+        title='Total captado por estado do proponente (renúncia fiscal)',
+        color_scheme='bluepurple',
+        log_color=True,
+      )
+      st.caption(
+        'Mapa do Brasil colorido pelo total captado via renúncia fiscal segundo o estado do '
+        'proponente. A escala logarítmica de cor cria nuances entre estados de portes muito '
+        'diferentes (SP e RJ captam bilhões, os demais milhões).'
+      )
+    
+    with col2:
+      # Participação de cada mecanismo de captação.
+      mecanismos = {
+        'Art. 1º': 'CAPTADO_ART1',
+        'Art. 1º-A': 'CAPTADO_ART1A',
+        'Art. 3º': 'CAPTADO_ART3',
+        'Art. 3º-A': 'CAPTADO_ART3A',
+        'Art. 18': 'CAPTADO_ART18',
+        'Art. 25': 'CAPTADO_ART25',
+        'Art. 39': 'CAPTADO_ART39',
+        'Funcines': 'CAPTADO_FUNCINES',
+        'Edital ANCINE': 'CAPTADO_EDITAL_ANCINE',
+        'Outros editais': 'CAPTADO_OUTROS_EDITAIS',
+        'PAR': 'CAPTADO_PAR',
+        'PAQ': 'CAPTADO_PAQ',
+        'Lei estadual': 'CAPTADO_LEI_ESTADUAL',
+        'Lei municipal': 'CAPTADO_LEI_MUNICIPAL',
+        'Outras fontes': 'CAPTADO_OUTRAS_FONTES',
+        'Contrapartida': 'CAPTADO_CONTRAPARTIDA',
+        'Conversão': 'CAPTADO_CONVERSAO',
+      }
+      df_mec = pd.DataFrame({
+        'Mecanismo': list(mecanismos.keys()),
+        'Total captado': [df_projetos_renfisc[col].sum() for col in mecanismos.values()],
+      }).sort_values('Total captado', ascending=False)
 
-  st.header('Captação por mecanismo de incentivo no Brasil')
-  with st.container(horizontal=True, border=True):
-    plot_custom_ranking_bar_chart(
-      df=df_mec,
-      x='Total captado',
-      x_title='Total captado (R$)',
-      y='Mecanismo',
-      y_title=None,
-      title='Captação por mecanismo de fomento',
-      tooltip=['Mecanismo', 'Total captado'],
-      color='Total captado',
-      color_scheme='viridis',
-      label_limit=180,
-      step=24,
-    )
-    st.caption(
-      'Distribuição do total captado entre todos os mecanismos de fomento. Os artigos 3º-A e 3º da '
-      'Lei do Audiovisual lideram, seguidos do 1º-A e do 39. '
-      'Mecanismos como PAR, PAQ, contrapartida e conversão têm captação quase nula.'
-    )
+      plot_custom_ranking_bar_chart(
+        df=df_mec,
+        x='Total captado',
+        x_title='Total captado (R$)',
+        y='Mecanismo',
+        y_title=None,
+        title='Captação por mecanismo de fomento',
+        tooltip=['Mecanismo', 'Total captado'],
+        color='Total captado',
+        color_scheme='viridis',
+        label_limit=180,
+        step=24,
+      )
+      st.caption(
+        'Distribuição do total captado entre todos os mecanismos de fomento. Os artigos 3º-A e 3º da '
+        'Lei do Audiovisual lideram, seguidos do 1º-A e do 39. '
+        'Mecanismos como PAR, PAQ, contrapartida e conversão têm captação quase nula.'
+      )
 
   df_ranking_mec = pd.DataFrame({
     'Mecanismo': list(mecanismos.keys()),
@@ -180,30 +183,53 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
   # e pinta todas as células da mesma cor.
   df_mec_uf.loc[df_mec_uf['Total captado'] == 0, 'Total captado'] = None
 
-  st.subheader('Top mecanismos de fomento por estado')
-  st.caption(
-    'Heatmap do total captado por estado do proponente para os 7 mecanismos de maior captação '
-    'nacional (Art. 3º-A, 3º, 1º-A, 39, 1º, 25 e Funcines). A cor usa escala logarítmica, pois '
-    'SP e RJ captam ordens de grandeza acima dos demais estados; estados sem captação no '
-    'mecanismo ficam sem preenchimento.'
-  )
-  plot_custom_heatmap(
-    df=df_mec_uf,
-    x='Mecanismo',
-    x_title=None,
-    y='UF_PROPONENTE',
-    y_title='Estado',
-    color='Total captado',
-    color_title='Total captado (R$)',
-    title='Top 7 mecanismos de fomento por estado (2026)',
-    cell_size=20,
-    color_scheme='yelloworangered',
-    log_color=True,
-    invalid_color="#fdde99",
-  )
+  with st.container(horizontal=True, border=True, width='stretch'):
+    plot_custom_heatmap(
+      df=df_mec_uf,
+      x='Mecanismo',
+      x_title=None,
+      y='UF_PROPONENTE',
+      y_title='Estado',
+      color='Total captado',
+      color_title='Total captado (R$)',
+      title='Top 7 mecanismos de fomento por estado (2026)',
+      cell_size=20,
+      color_scheme='yelloworangered',
+      log_color=True,
+      invalid_color="#fdde99",
+    )
+    st.caption(
+      'Heatmap do total captado por estado do proponente para os 7 mecanismos de maior captação '
+      'nacional (Art. 3º-A, 3º, 1º-A, 39, 1º, 25 e Funcines). A cor usa escala logarítmica, pois '
+      'SP e RJ captam ordens de grandeza acima dos demais estados; estados sem captação no '
+      'mecanismo ficam sem preenchimento.'
+    )
 
-  st.header('Captação por mecanismo de incentivo no município de São Paulo')
+  st.header('Captação e mecanismos de incentivo no município de São Paulo')
   df_sp = df_projetos_renfisc[df_projetos_renfisc['MUNICIPIO_PROPONENTE'] == 'SAO PAULO']
+
+  with st.container(horizontal=True, border=True, width='stretch'):
+    df_projetos_renfisc['ANO_APROVACAO'] = pd.to_datetime(df_projetos_renfisc['DATA_PUB_APROVACAO_PROJETO'], errors='coerce', dayfirst=True).dt.year
+    df_sp_ano = df_projetos_renfisc[df_projetos_renfisc['MUNICIPIO_PROPONENTE'] == 'SAO PAULO']
+    df_sp_ano = df_sp_ano.groupby('ANO_APROVACAO')['TOTAL_CAPTADO'].sum().reset_index()
+    df_sp_ano = df_sp_ano.dropna()
+
+    plot_custom_line_chart(
+      df_sp_ano,
+      'ANO_APROVACAO',
+      'Ano de aprovação do projeto',
+      'TOTAL_CAPTADO',
+      'Total captado (R$)',
+      'Evolução anual da captação em São Paulo'
+    )
+    st.caption(
+      'Total captado via renúncia fiscal por ano de aprovação do projeto, considerando '
+      'proponentes sediados em São Paulo (1994-2024). A trajetória é de crescimento com picos '
+      r'bem marcados — o maior foi em 2018 (R\$ 229 milhões), seguido de 2022 (R\$ 192 milhões) e '
+      r'2023 (R\$ 180 milhões).'
+    )
+  
+  st.subheader('Mecanismos mais usados por proponentes paulistanos')
   df_mec_sp = pd.DataFrame({
     'Mecanismo': list(mecanismos.keys()),
     'Total captado SP': [df_sp[col].sum() for col in mecanismos.values()],
@@ -214,9 +240,8 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
   ).round(1)
   df_mec_sp = df_mec_sp.sort_values('Total captado SP', ascending=False)
 
-  st.subheader('Mecanismos mais usados por proponentes paulistanos')
   with st.container(horizontal=True):
-    col1, col2 = st.columns([2, 1], gap='large')
+    col1, col2 = st.columns([2, 1], gap='small')
     
     with col1:
       df_mec_sp_long = df_mec_sp.melt(
@@ -229,7 +254,9 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
         'Total captado BR': 'Brasil',
         'Total captado SP': 'São Paulo',
       })
-      ordem_mec = df_mec_sp.sort_values('Total captado BR', ascending=False)['Mecanismo'].tolist()
+      df_mec_sp_long['Total captado SP'] = df_mec_sp_long['Mecanismo'].map(
+        df_mec_sp.set_index('Mecanismo')['Total captado SP']
+      )
       
       with st.container(border=True):
         plot_custom_layered_bar_chart(
@@ -240,9 +267,10 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
           y_title=None,
           color='Escopo',
           color_title=None,
-          title='Parcela de São Paulo no total de cada mecanismo',
-          sort_by='Total captado',
+          title='Parcela paulistana no total de cada mecanismo',
+          sort_by='Total captado SP',
           label_limit=180,
+          color_scheme='set1'
         )
         st.caption(
           'Duas barras sobrepostas por mecanismo: a de fundo (Brasil) mostra o total captado '
@@ -265,7 +293,7 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
           df=df_mec_sp_pie,
           color='Mecanismo',
           theta='Total captado SP',
-          title='Distribuição dos mecanismos no captado paulista',
+          title='Distribuição dos mecanismos no captado paulistano',
           inner_radius=35,
           outer_radius=90,
         )
@@ -376,5 +404,113 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
       label_limit=180,
       step=24,
     )
+
+  st.subheader('Distribuição por situação na cidade de São Paulo')
+  df_sp_situacao_captacao = df_sp.groupby('SITUACAO_ATUAL').agg(
+    N_PROJETOS=('TITULO_PROJETO', 'count'),
+    TOTAL_CAPTADO=('TOTAL_CAPTADO', 'sum'),
+  ).round(2).reset_index().sort_values(by='TOTAL_CAPTADO', ascending=False)
+
+  df_sp_situacao_captacao['PARTICIPACAO_PROJETOS (%)'] = (
+    df_sp_situacao_captacao['N_PROJETOS'] / df_sp_situacao_captacao['N_PROJETOS'].sum() * 100
+  ).round(2)
+  df_sp_situacao_captacao['PARTICIPACAO_CAPTADO (%)'] = (
+    df_sp_situacao_captacao['TOTAL_CAPTADO'] / df_sp_situacao_captacao['TOTAL_CAPTADO'].sum() * 100
+  ).round(2)
+
+  df_sp_situacao_captacao['N_PROJETOS'] = df_sp_situacao_captacao['N_PROJETOS'].astype(int)
+  df_sp_situacao_captacao['TOTAL_CAPTADO'] = df_sp_situacao_captacao['TOTAL_CAPTADO'].map('{:,.2f}'.format)
+  df_sp_situacao_captacao['PARTICIPACAO_PROJETOS (%)'] = df_sp_situacao_captacao['PARTICIPACAO_PROJETOS (%)'].map('{:.2f}'.format)
+  df_sp_situacao_captacao['PARTICIPACAO_CAPTADO (%)'] = df_sp_situacao_captacao['PARTICIPACAO_CAPTADO (%)'].map('{:.2f}'.format)
+  
+  df_sp_situacao_captacao.rename(columns={
+    'SITUACAO_ATUAL': 'Situação atual',
+    'N_PROJETOS': 'Qtde de projetos',
+    'TOTAL_CAPTADO': 'Total Captado (R$)',
+    'PARTICIPACAO_PROJETOS (%)': 'Participação em projetos (%)',
+    'PARTICIPACAO_CAPTADO (%)': 'Participação captado (%)'
+  }, inplace=True)
+
+  st.table(df_sp_situacao_captacao, hide_index=True, border=True)
+
+  df_situ_bubble = df_sp.groupby('SITUACAO_ATUAL').agg(
+    N_PROJETOS=('TITULO_PROJETO', 'count'),
+    TOTAL_CAPTADO=('TOTAL_CAPTADO', 'sum'),
+  ).reset_index().sort_values('TOTAL_CAPTADO', ascending=False)
+
+  with st.container(border=True):
+    plot_custom_bubble_chart(
+      df=df_situ_bubble,
+      x='TOTAL_CAPTADO',
+      x_title='Total captado (R$)',
+      y='N_PROJETOS',
+      y_title='Número de projetos',
+      size='TOTAL_CAPTADO',
+      size_title='Total captado (R$)',
+      color='SITUACAO_ATUAL',
+      color_title='Situação',
+      title='Situação atual: total captado vs número de projetos (SP)',
+      log_x=True,
+      tooltip_fields=['SITUACAO_ATUAL', 'TOTAL_CAPTADO', 'N_PROJETOS'],
+      show_color_legend=False,
+    )
+    st.caption(
+      'Cada bolha é uma situação atual: eixo X é o total captado e eixo Y, o número de '
+      'projetos. O tamanho acompanha o total captado. Passe o mouse para ver a situação.'
+    )
+
+  st.subheader('Resumo do município de São Paulo')
+  total_captado_sp = df_sp['TOTAL_CAPTADO'].sum()
+  total_captado_br = df_projetos_renfisc['TOTAL_CAPTADO'].sum()
+  n_projetos_sp = df_sp.shape[0]
+  n_projetos_br = df_projetos_renfisc.shape[0]
+
+  captado_mec_sp = {
+    rotulo: df_sp[col].sum() for rotulo, col in mecanismos.items()
+  }
+  principal_mec = max(captado_mec_sp, key=captado_mec_sp.get)
+
+  with st.container():
+    col_r1, col_r2, col_r3 = st.columns([1, 1, 1], gap='large')
+    with col_r1:
+      st.metric('Total captado SP', f"R$ {total_captado_sp:,.0f}", border=True)
+    with col_r2:
+      st.metric(
+        'Participação no captado do Brasil',
+        f"{total_captado_sp / total_captado_br * 100:.1f}%",
+        border=True,
+      )
+    with col_r3:
+      st.metric('Total de projetos SP', f"{n_projetos_sp:,}", border=True)
+
+    col_r4, col_r5, col_r6 = st.columns([1, 1, 1], gap='large')
+    with col_r4:
+      st.metric(
+        'Participação nos projetos do Brasil',
+        f"{n_projetos_sp / n_projetos_br * 100:.1f}%",
+        border=True,
+      )
+    with col_r5:
+      st.metric('Principal mecanismo', principal_mec, border=True)
+    with col_r6:
+      st.metric(
+        'Valor no principal mecanismo',
+        f"R$ {captado_mec_sp[principal_mec]:,.0f}",
+        border=True,
+      )
+
+  with st.container(border=True):
+    st.markdown('**Top 5 projetos com maior captação em São Paulo**')
+    df_top5 = (
+      df_sp.nlargest(5, 'TOTAL_CAPTADO')[['TITULO_PROJETO', 'PROPONENTE', 'TOTAL_CAPTADO']]
+        .copy()
+    )
+    df_top5['TOTAL_CAPTADO'] = df_top5['TOTAL_CAPTADO'].map('{:,.2f}'.format)
+    df_top5 = df_top5.rename(columns={
+      'TITULO_PROJETO': 'Projeto',
+      'PROPONENTE': 'Proponente',
+      'TOTAL_CAPTADO': 'Total captado (R$)',
+    })
+    st.table(df_top5, hide_index=True, border='horizontal')
 
   return
