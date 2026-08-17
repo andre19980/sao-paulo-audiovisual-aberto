@@ -6,6 +6,7 @@ from lib.normalizers import converte_moeda, normaliza_cnpj, normaliza_municipio
 from charts.bar import plot_custom_layered_bar_chart, plot_custom_ranking_bar_chart
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 from charts.bubble import plot_custom_bubble_chart
+from charts.heatmap import plot_custom_heatmap
 from charts.pie import plot_custom_pie_chart
 
 def section(df_projetos_renfisc, df_produtoras_independentes):
@@ -141,7 +142,7 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
     'Total captado': [df_projetos_renfisc[col].sum() for col in mecanismos.values()],
   }).sort_values('Total captado', ascending=False)
 
-  st.header('Captação por mecanismo de incentivo')
+  st.header('Captação por mecanismo de incentivo no Brasil')
   with st.container(horizontal=True, border=True):
     plot_custom_ranking_bar_chart(
       df=df_mec,
@@ -161,6 +162,45 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
       'Lei do Audiovisual lideram, seguidos do 1º-A e do 39. '
       'Mecanismos como PAR, PAQ, contrapartida e conversão têm captação quase nula.'
     )
+
+  df_ranking_mec = pd.DataFrame({
+    'Mecanismo': list(mecanismos.keys()),
+    'Total captado': [df_projetos_renfisc[col].sum() for col in mecanismos.values()],
+  }).sort_values('Total captado', ascending=False)
+  top7_mec = df_ranking_mec.head(7)['Mecanismo'].tolist()
+  cols_top7 = [mecanismos[m] for m in top7_mec]
+  df_mec_uf = (
+    df_projetos_renfisc
+      .melt(id_vars=['UF_PROPONENTE'], value_vars=cols_top7, var_name='COL_MEC', value_name='Total captado')
+  )
+  df_mec_uf['Mecanismo'] = df_mec_uf['COL_MEC'].map({v: k for k, v in mecanismos.items()})
+  df_mec_uf = df_mec_uf.groupby(['UF_PROPONENTE', 'Mecanismo'], as_index=False)['Total captado'].sum()
+  # Estados sem captação no mecanismo ficam como NaN (sem preenchimento). Isso é necessário
+  # porque a escala logarítmica não aceita valor 0 (log(0) = -∞), o que colapsa o domínio
+  # e pinta todas as células da mesma cor.
+  df_mec_uf.loc[df_mec_uf['Total captado'] == 0, 'Total captado'] = None
+
+  st.subheader('Top mecanismos de fomento por estado')
+  st.caption(
+    'Heatmap do total captado por estado do proponente para os 7 mecanismos de maior captação '
+    'nacional (Art. 3º-A, 3º, 1º-A, 39, 1º, 25 e Funcines). A cor usa escala logarítmica, pois '
+    'SP e RJ captam ordens de grandeza acima dos demais estados; estados sem captação no '
+    'mecanismo ficam sem preenchimento.'
+  )
+  plot_custom_heatmap(
+    df=df_mec_uf,
+    x='Mecanismo',
+    x_title=None,
+    y='UF_PROPONENTE',
+    y_title='Estado',
+    color='Total captado',
+    color_title='Total captado (R$)',
+    title='Top 7 mecanismos de fomento por estado (2026)',
+    cell_size=20,
+    color_scheme='yelloworangered',
+    log_color=True,
+    invalid_color="#fdde99",
+  )
 
   st.header('Captação por mecanismo de incentivo no município de São Paulo')
   df_sp = df_projetos_renfisc[df_projetos_renfisc['MUNICIPIO_PROPONENTE'] == 'SAO PAULO']
