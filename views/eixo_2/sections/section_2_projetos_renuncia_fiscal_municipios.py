@@ -390,20 +390,59 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
     'Total captado': [df_produtoras_sp_captacao[col].sum() for col in mecanismos.values()],
   })
   
-  with st.container(border=True):
-    plot_custom_ranking_bar_chart(
-      df=df_mec_prod_ind_sp,
-      x='Total captado',
-      x_title='Total captado (R$)',
-      y='Mecanismo',
-      y_title=None,
-      title='Captação das produtoras independentes paulistanas por mecanismo de fomento',
-      tooltip=['Mecanismo', 'Total captado'],
-      color='Total captado',
-      color_scheme='viridis',
-      label_limit=180,
-      step=24,
+  with st.container(horizontal=True):
+    col1, col2 = st.columns([2, 1], border=True)
+    
+    with col1:
+      plot_custom_ranking_bar_chart(
+        df=df_mec_prod_ind_sp,
+        x='Total captado',
+        x_title='Total captado (R$)',
+        y='Mecanismo',
+        y_title=None,
+        title='Captação das produtoras independentes paulistanas por mecanismo de fomento',
+        tooltip=['Mecanismo', 'Total captado'],
+        color='Total captado',
+        color_scheme='viridis',
+        label_limit=180,
+        step=24,
+      )
+      
+    df_nivel = (
+      df_produtoras_sp_captacao
+        .groupby('CLASSIFICACAO_NIVEL_PRODUTORA')
+        .agg(
+          N_PROJETOS=('TITULO_PROJETO', 'count'),
+          TOTAL_CAPTADO=('TOTAL_CAPTADO', 'sum'),
+        )
+        .reset_index()
+        .sort_values('TOTAL_CAPTADO', ascending=False)
     )
+    df_nivel['MÉDIA POR PROJETO'] = df_nivel['TOTAL_CAPTADO'] / df_nivel['N_PROJETOS']
+
+    with col2:
+      plot_custom_ranking_bar_chart(
+        df=df_nivel,
+        x='TOTAL_CAPTADO',
+        x_title='Total captado (R$)',
+        y='CLASSIFICACAO_NIVEL_PRODUTORA',
+        y_title='Nível da produtora',
+        title='Total captado por nível da produtora independente (SP)',
+        tooltip=['CLASSIFICACAO_NIVEL_PRODUTORA', 'N_PROJETOS', 'TOTAL_CAPTADO', 'MÉDIA POR PROJETO'],
+        color='TOTAL_CAPTADO',
+        color_scheme='tableau10',
+        label_limit=60,
+        step=26,
+      )
+      st.caption(
+        'Projetos de renúncia fiscal com proponente em São Paulo cruzados com o nível de '
+        'classificação da produtora independente (1 a 5), definido pela Instrução Normativa nº 119 '
+        'da ANCINE. O nível reflete o porte da produtora: exige um mínimo de obras audiovisuais '
+        'realizadas (nível 2 = 2 obras, 3 = 4, 4 = 6, 5 = 12) e define o teto de captação por '
+        r'projeto (de R\$ 5 mi no nível 1 até R\$ 100 mi no nível 5). Por isso, produtoras de nível '
+        r'mais alto captam mais: as de nível 5 respondem por R\$ 914 mi (484 projetos) e as de nível '
+        r'1, por R\$ 173 mi (183 projetos).'
+      )
 
   st.subheader('Distribuição por situação na cidade de São Paulo')
   df_sp_situacao_captacao = df_sp.groupby('SITUACAO_ATUAL').agg(

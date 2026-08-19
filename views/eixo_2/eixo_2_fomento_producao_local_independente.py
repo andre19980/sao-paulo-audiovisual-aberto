@@ -39,11 +39,10 @@ st.write(df_produtores)
 st.subheader('Projetos com renúncia fiscal')
 st.write(df_projetos_renfisc)
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3 = st.tabs([
   'Produtoras independentes e obras',
   'Projetos com renúncia fiscal',
   'Segmentação de obras',
-  'Acessibilidade'
 ])
 
 with tab1:
@@ -52,5 +51,3 @@ with tab2:
   section_2(df_projetos_renfisc, df_produtoras_independentes)
 with tab3:
   section_3(df_obras)
-# with tab4:
-#   section_4(df_salas_complexos)
