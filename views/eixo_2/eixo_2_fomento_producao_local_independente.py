@@ -16,28 +16,28 @@ DATA_URL = {
 
 st.title('Eixo 2 - Fomento à Produção Local e Independente (Obras Não Publicitárias Brasileiras)')
 
-data_load_state = st.text('Baixando e descompactando dados da ANCINE...')
+# data_load_state = st.text('Baixando e descompactando dados da ANCINE...')
 
 df_obras = load_obras_brasileiras(DATA_URL['obras'])
 df_produtoras_independentes = load_data(DATA_URL['produtoras_independentes'])
 df_produtores = load_data(DATA_URL['produtores'])
 df_projetos_renfisc = load_data(DATA_URL['projetos_renuncia_fiscal'])
 
-data_load_state.text('Dados carregados com sucesso!')
+# data_load_state.text('Dados carregados com sucesso!')
 
-st.subheader('Visão geral dos dados carregados')
-st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
-         f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
+# Exibição dos dados para fins de debug
+# st.subheader('Visão geral dos dados carregados')
+# st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
+#          f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
 
-st.subheader('Amostra dos dados')
-st.dataframe(df_obras.head(20), hide_index=True)
-
-st.subheader('Produtoras independentes')
-st.write(df_produtoras_independentes)
-st.subheader('Produtores de obras não publis')
-st.write(df_produtores)
-st.subheader('Projetos com renúncia fiscal')
-st.write(df_projetos_renfisc)
+# st.subheader('Amostra das obras')
+# st.dataframe(df_obras.head(20), hide_index=True)
+# st.subheader('Produtoras independentes')
+# st.write(df_produtoras_independentes)
+# st.subheader('Produtores de obras não publis')
+# st.write(df_produtores)
+# st.subheader('Projetos com renúncia fiscal')
+# st.write(df_projetos_renfisc)
 
 tab1, tab2, tab3 = st.tabs([
   'Produtoras independentes e obras',
