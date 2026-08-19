@@ -2,6 +2,7 @@ import streamlit as st
 
 from views.eixo_2.sections.section_1_produtoras_independentes_obras import section as section_1
 from views.eixo_2.sections.section_2_projetos_renuncia_fiscal_municipios import section as section_2
+from views.eixo_2.sections.section_3_segmentacao_de_obras import section as section_3
 
 from data.loaders import load_obras_brasileiras
 from data.loaders import load_data
@@ -41,19 +42,15 @@ st.write(df_projetos_renfisc)
 tab1, tab2, tab3, tab4 = st.tabs([
   'Produtoras independentes e obras',
   'Projetos com renúncia fiscal',
-  'Exibidores e operação',
+  'Segmentação de obras',
   'Acessibilidade'
 ])
-
-# Identificar quantas obras audiovisuais são produzidas por empresas sediadas no município vs. por empresas de outros locais.
-# Mapear produtoras independentes paulistanas que não acessam mecanismos federais de fomento – alvo potencial para um edital municipal de apoio ao audiovisual.
-# Cruzar dados de captação via leis de incentivo (ex.: Art. 1º, 3º, 18 da Lei do Audiovisual) com o município do proponente para avaliar se São Paulo está sendo contemplada adequadamente.
 
 with tab1:
   section_1(df_produtoras_independentes, df_produtores)
 with tab2:
   section_2(df_projetos_renfisc, df_produtoras_independentes)
-# with tab3:
-#   section_3(df_salas_complexos)
+with tab3:
+  section_3(df_obras)
 # with tab4:
 #   section_4(df_salas_complexos)

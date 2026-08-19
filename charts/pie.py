@@ -2,8 +2,12 @@ import streamlit as st
 import altair as alt
 import json
 
-def plot_custom_pie_chart(df, color, theta, title, inner_radius=50, outer_radius=120, show_percentage=True):
+def plot_custom_pie_chart(df, color, theta, title, inner_radius=50, outer_radius=120, show_percentage=True, color_scheme=None):
   theta_json = json.dumps(theta)
+  color_kwargs = {}
+  if color_scheme is not None:
+    color_kwargs['scale'] = alt.Scale(scheme=color_scheme)
+
   base = (
     alt.Chart(df)
       .transform_joinaggregate(
@@ -14,7 +18,7 @@ def plot_custom_pie_chart(df, color, theta, title, inner_radius=50, outer_radius
       )
       .encode(
         theta=alt.Theta(f'{theta}:Q'),
-        color=alt.Color(f'{color}:N'),
+        color=alt.Color(f'{color}:N', **color_kwargs),
         tooltip=[
           color,
           alt.Tooltip(f'{theta}:Q', format=',.0f'),

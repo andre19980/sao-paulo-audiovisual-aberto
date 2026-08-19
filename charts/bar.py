@@ -194,3 +194,124 @@ def plot_custom_stacked_bar_chart(df, x, x_title, y, y_title, color, color_title
   st.altair_chart(chart)
 
   return
+
+def plot_custom_stacked_horizontal_bar_echarts(df, y, x, series, series_title, title, color_scheme=None, height='520px', normalize=True, key=None):
+  """Barra horizontal empilhada normalizada (100%) usando ECharts.
+
+  Cada categoria do eixo Y é uma barra composta pelas séries da coluna 'series',
+  e o comprimento de cada fatia é a participação (%) da série naquela categoria.
+  Quando 'normalize' é True, as barras somam 100%; caso contrário, mostram o
+  valor absoluto.
+
+  Parâmetros
+  ----------
+  df : pd.DataFrame
+    Dataset em formato longo, com as colunas apontadas por 'y', 'x' e 'series'.
+  y : str
+    Coluna categórica do eixo Y (categorias das barras).
+  x : str
+    Coluna numérica com o valor de cada fatia.
+  series : str
+    Coluna categórica que define as séries (cores).
+  series_title : str
+    Título da legenda de séries.
+  title : str
+    Título do gráfico.
+  color_scheme : str | list[str] | None
+    Paleta de cores das séries: pode ser uma lista de cores hex/rgb (ex.:
+    ['#5470c6', '#91cc75', ...]) ou o nome de uma paleta predefinida
+    (ex.: 'category', 'dark', 'vintage', 'macarons', 'infographic',
+    'shine', 'roma', 'walden'). Default None = paleta padrão do ECharts.
+  height : str
+    Altura do gráfico (CSS, ex.: '520px').
+  normalize : bool
+    Se True, converte cada linha para porcentagem (soma 100); se False, usa
+    os valores absolutos.
+  key : str | None
+    Chave do componente Streamlit. Se informada, deve ser uma string estável
+    (sem espaços/acentos), evitando que o gráfico remonte a cada rerun.
+  """
+  from streamlit_echarts import st_echarts, JsCode
+
+  # Paletas predefinidas do ECharts (mapa nome -> lista de cores).
+  _PALETAS = {
+    'category': ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'],
+    'dark': ['#dd6b66', '#759aa0', '#e69d87', '#8dc1a9', '#ea7e53', '#eedd78', '#73a373', '#73b9bc', '#7289ab'],
+    'vintage': ['#d87c7c', '#919e8b', '#d7ab82', '#6e7074', '#61a0a8', '#efa18d', '#787464', '#cc7e63', '#724e47'],
+    'macarons': ['#2ec7c9', '#b6a2de', '#5ab1ef', '#ffb980', '#d87a80', '#8d98b3', '#e5cf0d', '#97b552', '#95706d'],
+    'infographic': ['#c1232b', '#27727b', '#fcce10', '#e87c25', '#b5c334', '#fe8463', '#9bca63', '#fad860', '#f3a43b'],
+    'shine': ['#c12e34', '#e6b600', '#0098d9', '#2b821d', '#005eaa', '#339ca8', '#cda819', '#32a487'],
+    'roma': ['#e01f54', '#001852', '#f5e8c8', '#b8d2c7', '#c6b38e', '#a4d8c2', '#f3d999', '#d3758f', '#dcc392'],
+    'walden': ['#3fb1e3', '#6be6c1', '#626c91', '#a0a7e6', '#c4ebad', '#96dee8', '#c89f4f', '#4e73b9'],
+  }
+  colors = None
+  if isinstance(color_scheme, str) and color_scheme in _PALETAS:
+    colors = _PALETAS[color_scheme]
+  elif color_scheme is not None:
+    colors = color_scheme  # lista de cores fornecida diretamente
+
+  pivot = df.pivot_table(index=y, columns=series, values=x, aggfunc='sum', fill_value=0)
+  categorias = pivot.index.tolist()
+  series_names = pivot.columns.tolist()
+
+  data = {}
+  for cat in categorias:
+    row = pivot.loc[cat]
+    total = float(row.sum())
+    if normalize and total > 0:
+      data[cat] = [round(float(row[s]) / total * 100, 1) for s in series_names]
+    else:
+      data[cat] = [float(row[s]) for s in series_names]
+
+  # Paleta de cores das séries. Se definida, aplica a cor em cada série
+  # via itemStyle (mais robusto que depender apenas do color global).
+  palette = colors or []
+  series = []
+  for i, s in enumerate(series_names):
+    cor = palette[i % len(palette)] if palette else None
+    item = {
+      'name': s,
+      'type': 'bar',
+      'stack': 'total',
+      'barWidth': '60%',
+      'label': {
+        'show': True,
+        'formatter': JsCode('function(params) { return Math.round(params.value * 10) / 10 + "%"; }').js_code
+        if normalize else {'show': False},
+      },
+      'data': [data[cat][i] for cat in categorias],
+    }
+    if cor is not None:
+      item['itemStyle'] = {'color': cor}
+    series.append(item)
+
+  options = {
+    'title': {'text': title, 'left': 'center', 'top': 0},
+    'tooltip': {
+      'trigger': 'axis',
+      'axisPointer': {'type': 'shadow'},
+    },
+    'legend': {'data': series_names, 'top': 36},
+    'grid': {'left': '3%', 'right': '4%', 'top': 70, 'bottom': '3%', 'containLabel': True},
+    'xAxis': {
+      'type': 'value',
+      'max': 100 if normalize else None,
+    },
+    'yAxis': {
+      'type': 'category',
+      'data': categorias,
+      'axisLabel': {'width': 200, 'overflow': 'truncate'},
+    },
+    'series': series,
+  }
+
+  if colors:
+    options['color'] = colors
+
+  st_echarts(
+    options=options,
+    height=height,
+    key=key,
+  )
+
+  return
