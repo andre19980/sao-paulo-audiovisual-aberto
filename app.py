@@ -11,6 +11,12 @@ eixo_2_page = st.Page(
   icon=":material/monitoring:"
 )
 
-pg = st.navigation([eixo_1_page, eixo_2_page])
+eixo_5_page = st.Page(
+  "views/eixo_5/eixo_5_transparencia_fomento.py",
+  title="Eixo 5: Transparência e Eficiência do Fomento Público",
+  icon=":material/query_stats:"
+)
+
+pg = st.navigation([eixo_1_page, eixo_2_page, eixo_5_page])
 st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:", layout="wide")
 pg.run()

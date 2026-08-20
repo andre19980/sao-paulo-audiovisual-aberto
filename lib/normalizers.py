@@ -20,7 +20,7 @@ def normaliza_municipio(municipio):
   return unicodedata.normalize('NFD', str(municipio)).encode('ascii', 'ignore').decode().upper().strip()
 
 def converte_moeda(valor_str):
-  if pd.isna(valor_str) or valor_str == '':
+  if pd.isna(valor_str) or valor_str == '' or valor_str == 'R$ 0,00':
     return 0.0
   valor_limpo = str(valor_str).replace('R$ ', '').replace('.', '').replace(',', '.').strip()
   try:

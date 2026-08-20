@@ -2,7 +2,7 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 
-def plot_custom_line_chart(df, x, x_title, y, y_title, title, tooltip_format=',.0f'):
+def plot_custom_line_chart(df, x, x_title, y, y_title, title, tooltip_format=',.0f', x_nice=None):
   tooltip_fields = []
   for campo in [x, y]:
     if campo in df.columns and pd.api.types.is_numeric_dtype(df[campo]):
@@ -10,10 +10,14 @@ def plot_custom_line_chart(df, x, x_title, y, y_title, title, tooltip_format=',.
     else:
       tooltip_fields.append(campo)
 
+  x_scale = alt.Undefined
+  if x_nice is not None:
+    x_scale = alt.Scale(nice=x_nice)
+
   base = (
     alt.Chart(df)
       .encode(
-        x=alt.X(f'{x}:Q', title=x_title, axis=alt.Axis(labelAngle=0, format='d')),
+        x=alt.X(f'{x}:Q', title=x_title, scale=x_scale, axis=alt.Axis(labelAngle=0, format='d')),
         y=alt.Y(f'{y}:Q', title=y_title),
         tooltip=tooltip_fields
       )
