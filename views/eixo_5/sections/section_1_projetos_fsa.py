@@ -4,6 +4,7 @@ import numpy as np
 
 from charts.line import plot_custom_line_chart
 from charts.bar import plot_custom_grouped_bar_chart, plot_custom_ranking_bar_chart
+from charts.brazil_map import plot_custom_choropleth_brazil_map
 from lib.normalizers import normaliza_cnpj
 
 def section(df_projetos_fsa, df_produtoras_independentes=None):
@@ -115,28 +116,154 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
         title='Evolução do total contratado por ano',
         x_nice=False,
       )
-  st.caption(
-    'Soma dos valores contratados dos projetos de investimento do FSA por ano do contrato '
-    '(e NÃO do edital), mostrando a evolução temporal do montante contratado.'
+      st.caption(
+        'Soma dos valores contratados dos projetos de investimento do FSA por ano do contrato '
+        '(e NÃO do edital), mostrando a evolução temporal do montante contratado.'
+      )
+
+  st.header('Relação FSA e produtoras independentes no Brasil')
+  st.subheader('Acesso das produtoras independentes ao FSA')
+  st.text(
+    'Compara o universo de produtoras independentes registradas na ANCINE com as que '
+    'aparecem como proponente e/ou produtora em contratos do FSA, via CNPJ. Mostra quanto '
+    'do setor produtivo independente efetivamente acessa o fundo.'
   )
 
-  st.subheader('FSA e produtoras independentes paulistanas')
+  df_fsa_cnpj_all = df_projetos_fsa.copy()
+  df_fsa_cnpj_all = df_fsa_cnpj_all.dropna(subset=['CNPJ_PROP_LIMPO', 'CNPJ_PROD_LIMPO'])
+
+  df_pi_cpnj_all = df_produtoras_independentes.copy()
+  df_pi_cpnj_all['CNPJ_LIMPO'] = df_pi_cpnj_all['CNPJ'].apply(normaliza_cnpj)
+
+  fsa_acesso = set(df_fsa_cnpj_all['CNPJ_PROP_LIMPO']) | set(df_fsa_cnpj_all['CNPJ_PROD_LIMPO'])
+  pi_cnpj = set(df_pi_cpnj_all['CNPJ_LIMPO'])
+
+  n_pi = len(pi_cnpj)
+  n_pi_fsa = len(pi_cnpj & fsa_acesso)
+  n_pi_sem = len(pi_cnpj - fsa_acesso)
+
+  with st.container(horizontal=True):
+    col1, col2, col3 = st.columns([1, 1, 1], gap='large')
+    with col1:
+      st.metric('Produtoras independentes registradas', f'{n_pi:,}', border=True)
+    with col2:
+      st.metric('Com acesso ao FSA (proponente/produtora)', f'{n_pi_fsa:,}', border=True)
+    with col3:
+      st.metric('Sem acesso ao FSA', f'{n_pi_sem:,}', border=True)
+
+  st.progress(n_pi_fsa / n_pi, text=f'Cobertura do FSA: {n_pi_fsa/n_pi*100:.1f}% das produtoras independentes')
+  st.space(size='medium')
+
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
 
-    fsa_cnpj = df_projetos_fsa.copy()
-    fsa_cnpj['CNPJ_LIMPO'] = fsa_cnpj['CNPJ_PROPONENTE'].apply(normaliza_cnpj)
-    pi_cnpj = df_produtoras_independentes.copy()
-    pi_cnpj['CNPJ_LIMPO'] = pi_cnpj['CNPJ'].apply(normaliza_cnpj)
-    pi_sp = pi_cnpj[pi_cnpj['MUNICIPIO'] == 'SÃO PAULO']
+    pi_fsa_origem = df_pi_cpnj_all[df_pi_cpnj_all['CNPJ_LIMPO'].isin(fsa_acesso)]
+    df_uf_acesso = (
+      pi_fsa_origem.groupby('UF')['CNPJ_LIMPO']
+        .nunique()
+        .rename('PRODUTORAS')
+        .reset_index()
+        .sort_values('PRODUTORAS', ascending=False)
+    )
+    
+    with col1:
+      with st.container(border=True):
+        plot_custom_choropleth_brazil_map(
+          df=df_uf_acesso,
+          geojson_path='assets/brazil-states.geojson',
+          uf_col='UF',
+          value_col='PRODUTORAS',
+          value_title='Produtoras com FSA',
+          title='Produtoras com acesso ao FSA por UF',
+          color_scheme='viridis',
+        )
+        st.caption('Origem das produtoras independentes com FSA, por UF.')
+
+    df_mun_acesso = (
+      pi_fsa_origem.groupby('MUNICIPIO')['CNPJ_LIMPO']
+        .nunique()
+        .rename('PRODUTORAS')
+        .reset_index()
+        .sort_values('PRODUTORAS', ascending=False)
+        .head(10)
+    )
+    with col2:
+      with st.container(border=True):
+        plot_custom_ranking_bar_chart(
+          df=df_mun_acesso,
+          x='PRODUTORAS',
+          x_title='Produtoras com FSA',
+          y='MUNICIPIO',
+          y_title=None,
+          title='Top municípios com produtoras no FSA',
+          tooltip=['MUNICIPIO', 'PRODUTORAS'],
+          color='PRODUTORAS',
+          color_scheme='viridis',
+          label_limit=200,
+          step=24,
+        )
+
+  with st.container(border=True):
+    fsa_ano = df_projetos_fsa.copy()
+    fsa_ano['ANO'] = pd.to_datetime(fsa_ano['DATA_EXTRATO_CONTRATO_DOU'], errors='coerce', dayfirst=True).dt.year
+
+    fsa_entrada = pd.concat([
+      fsa_ano[['CNPJ_PROP_LIMPO', 'ANO']].rename(columns={'CNPJ_PROP_LIMPO': 'CNPJ'}),
+      fsa_ano[['CNPJ_PROD_LIMPO', 'ANO']].rename(columns={'CNPJ_PROD_LIMPO': 'CNPJ'}),
+    ]).dropna()
+    fsa_entrada = fsa_entrada.drop_duplicates()
+    fsa_entrada = (
+      fsa_entrada[fsa_entrada['CNPJ'].isin(fsa_acesso)]
+        .groupby('CNPJ')['ANO']
+        .min()
+        .rename('ANO_ENTRADA')
+        .reset_index()
+    )
+    df_ano_entrada = (
+      fsa_entrada.groupby('ANO_ENTRADA')['CNPJ']
+        .nunique()
+        .rename('PRODUTORAS')
+        .reset_index()
+        .sort_values('ANO_ENTRADA')
+    )
+    plot_custom_line_chart(
+      df=df_ano_entrada,
+      x='ANO_ENTRADA',
+      x_title='Ano de entrada no FSA',
+      y='PRODUTORAS',
+      y_title='Produtoras que entraram',
+      title='Ano de entrada das produtoras no FSA',
+      x_nice=False,
+    )
+    st.caption(
+      'Ano do primeiro contrato no FSA de cada produtora independente (ano de entrada). '
+      'O acesso ao FSA é fortemente concentrado em SP (293) e RJ (255), que juntas '
+      'respondem por quase metade das produtoras contempladas. O ingresso foi intenso entre '
+      '2015 e 2019, coincidindo com as chamadas públicas de maior volume; a partir de 2020 o '
+      'ritmo de novas produtoras caiu.'
+    )
+    
+  st.subheader('FSA e produtoras independentes paulistanas')
+  df_pi_sp = df_produtoras_independentes.copy()
+  df_pi_sp = df_pi_sp[df_pi_sp['MUNICIPIO'] == 'SÃO PAULO']
+  df_pi_sp['CNPJ_LIMPO'] = df_pi_sp['CNPJ'].apply(normaliza_cnpj)
+  df_pi_sp = df_pi_sp[df_pi_sp['CNPJ_LIMPO'].isin(fsa_acesso)]
+  
+  fsa_cols=['TITULO_PROJETO', 'VALOR_CONTRATO_DOU', 'VALOR_TOTAL_LIBERADO']
+  fsa_all_cnpj = pd.concat([
+    df_fsa_cnpj_all[fsa_cols + ['CNPJ_PROP_LIMPO']].rename(columns={'CNPJ_PROP_LIMPO': 'CNPJ_LIMPO'}),
+    df_fsa_cnpj_all[fsa_cols + ['CNPJ_PROD_LIMPO']].rename(columns={'CNPJ_PROD_LIMPO': 'CNPJ_LIMPO'}),
+  ]).dropna()
+  fsa_all_cnpj = fsa_all_cnpj.drop_duplicates(subset=['TITULO_PROJETO', 'CNPJ_LIMPO'])
+  with st.container(horizontal=True):
+    col1, col2 = st.columns([1, 1], gap='large')
 
     df_cruz = pd.merge(
-      fsa_cnpj,
-      pi_sp[['CNPJ_LIMPO', 'CLASSIFICACAO_NIVEL_PRODUTORA']],
+      fsa_all_cnpj,
+      df_pi_sp[['CNPJ_LIMPO', 'CLASSIFICACAO_NIVEL_PRODUTORA']],
       on='CNPJ_LIMPO',
       how='inner',
     )
-
     df_nivel = (
       df_cruz.groupby('CLASSIFICACAO_NIVEL_PRODUTORA')
         .agg(
@@ -171,9 +298,9 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
           'avaliar como o fomento direto do FSA se distribui entre produtoras de portes distintos.'
         )
         st.text(
-          r'Em São Paulo, produtoras de nível 5 concentram R$ 293 mi (36% do contratado '
-          r'paulista) e as de nível 4, R$ 242 mi (30%) — somando 66% do total. As de nível 1 '
-          r'respondem por apenas 14%. Apesar disso, a taxa de execução é alta em todos os níveis '
+          r'Em São Paulo, produtoras de nível 5 concentram R$ 300 mi (37% do contratado '
+          r'paulista) e as de nível 4, R$ 233 mi (28%) — somando 65% do total. As de nível 1 '
+          r'respondem por cerca de 14%. Apesar disso, a taxa de execução é alta em todos os níveis '
           r'(96%-100%), indicando que as produtoras que conseguem acessar o FSA executam bem os '
           r'recursos. A concentração sugere que políticas municipais poderiam ampliar o acesso de '
           r'produtoras de níveis 1 a 3 (menor porte) ao fomento.'
@@ -181,6 +308,15 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
 
     with col2:
       with st.container():
+        pi_sp_acesso = df_pi_cpnj_all[df_pi_cpnj_all['MUNICIPIO'] == 'SÃO PAULO']['CNPJ_LIMPO']
+        n_sp = pi_sp_acesso.nunique()
+        n_sp_fsa = len(set(pi_sp_acesso) & fsa_acesso)
+
+        st.metric(
+          'Produtoras SP contempladas pelo FSA',
+          f'{n_sp_fsa:,} de {n_sp:,} ({n_sp_fsa/n_sp*100:.1f}%)',
+          border=True
+        )
         por_prod = (
           df_cruz.groupby('CNPJ_LIMPO')['VALOR_CONTRATO_DOU']
             .sum()
