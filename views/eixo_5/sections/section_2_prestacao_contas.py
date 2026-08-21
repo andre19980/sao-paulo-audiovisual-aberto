@@ -1,6 +1,7 @@
 import streamlit as st
 
 def section(df_processos_prest):
+  st.header('Panorama geral de prestação de contas')
   total_processos = len(df_processos_prest)
   df_responsaveis = df_processos_prest.groupby('RESPONSAVEL_PRESTACAO').agg({
     'NUMERO_PROCESSO': 'count',
