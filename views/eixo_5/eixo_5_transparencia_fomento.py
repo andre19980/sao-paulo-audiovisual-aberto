@@ -94,4 +94,4 @@ with tab2:
 with tab3:
   section_3(df_contribuintes, df_produtoras_independentes)
 with tab4:
-  section_4(df_projetos_fsa, df_projetos_renfisc)
+  section_4(df_projetos_fsa, df_projetos_renfisc, df_produtoras_independentes)
