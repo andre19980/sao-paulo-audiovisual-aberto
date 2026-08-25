@@ -5,7 +5,7 @@ import numpy as np
 from charts.pie import plot_custom_pie_chart
 from charts.bar import plot_custom_ranking_bar_chart
 
-def section(df_filmagens, df_obras):
+def section(df_filmagens):
   st.header('Panorama geral de filmagens estrangeiras no Brasil')
   
   total_filmagens = len(df_filmagens)

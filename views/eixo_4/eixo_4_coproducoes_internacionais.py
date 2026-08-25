@@ -3,6 +3,7 @@ import pandas as pd
 
 from views.eixo_4.sections.section_1_coproducoes import section as section_1
 from views.eixo_4.sections.section_2_filmagens import section as section_2
+from views.eixo_4.sections.section_3_agentes_economicos import section as section_3
 
 from lib.normalizers import classificar_tipo, normaliza_pais, normaliza_nr_tecnicos
 from data.loaders import load_data
@@ -28,27 +29,31 @@ df_filmagens['TIPO_OBRA'] = df_filmagens['TIPO_OBRA'].map(classificar_tipo)
 df_filmagens['PAIS'] = df_filmagens['PAIS'].map(normaliza_pais)
 df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'] = df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'].map(normaliza_nr_tecnicos)
 
+df_agentes['DATA_REGISTRO'] = pd.to_datetime(df_agentes['DATA_REGISTRO'], errors='coerce', dayfirst=True)
+df_agentes['ANO_REGISTRO'] = df_agentes['DATA_REGISTRO'].dt.year
+
 # Exibição dos dados para fins de debug
-st.subheader('Visão geral dos dados carregados')
-st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
-         f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
-st.dataframe(df_obras.head(20))
+# st.subheader('Visão geral dos dados carregados')
+# st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
+#          f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
+# st.dataframe(df_obras.head(20))
 
-st.subheader('Coproduções')
-st.dataframe(df_coproducoes)
-st.subheader('Filmagens')
-st.write(df_filmagens)
-st.subheader('Agentes internacionais')
-st.write(df_agentes)
+# st.subheader('Coproduções')
+# st.dataframe(df_coproducoes)
+# st.subheader('Filmagens')
+# st.write(df_filmagens)
+# st.subheader('Agentes internacionais')
+# st.write(df_agentes)
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3 = st.tabs([
   'Coproduções internacionais',
   'Filmagens estrangeiras',
   'Agentes econômicos',
-  'Cruzamentos',
 ])
 
 with tab1:
   section_1(df_coproducoes, df_obras)
 with tab2:
-  section_2(df_filmagens, df_obras)
+  section_2(df_filmagens)
+with tab3:
+  section_3(df_agentes)
