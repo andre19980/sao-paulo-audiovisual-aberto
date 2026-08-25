@@ -14,7 +14,7 @@ eixo_2_page = st.Page(
 eixo_4_page = st.Page(
   "views/eixo_4/eixo_4_coproducoes_internacionais.py",
   title="Eixo 4: Coproduções Internacionais e Filmagens Estrangeiras",
-  icon=":material/query_stats:"
+  icon=":material/partner_exchange:"
 )
 
 eixo_5_page = st.Page(

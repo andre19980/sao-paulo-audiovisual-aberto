@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 
 from views.eixo_4.sections.section_1_coproducoes import section as section_1
+from views.eixo_4.sections.section_2_filmagens import section as section_2
 
-# from lib.normalizers import converte_moeda, normaliza_cnpj, normaliza_municipio
+from lib.normalizers import classificar_tipo, normaliza_pais, normaliza_nr_tecnicos
 from data.loaders import load_data
 from data.loaders import load_obras_brasileiras
 
@@ -22,6 +23,10 @@ df_agentes = load_data(DATA_URL['agentes'])
 df_obras = load_obras_brasileiras(DATA_URL['obras'])
 
 # Preparação dos dados
+df_filmagens.drop_duplicates(inplace=True)
+df_filmagens['TIPO_OBRA'] = df_filmagens['TIPO_OBRA'].map(classificar_tipo)
+df_filmagens['PAIS'] = df_filmagens['PAIS'].map(normaliza_pais)
+df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'] = df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'].map(normaliza_nr_tecnicos)
 
 # Exibição dos dados para fins de debug
 st.subheader('Visão geral dos dados carregados')
@@ -45,3 +50,5 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 with tab1:
   section_1(df_coproducoes, df_obras)
+with tab2:
+  section_2(df_filmagens, df_obras)
