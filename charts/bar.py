@@ -2,14 +2,27 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 
-def plot_custom_grouped_bar_chart(df, x, x_title, y, y_title, x_offset, x_offset_title, title, x_scale_sort=None):
+def plot_custom_grouped_bar_chart(df, x, x_title, y, y_title, x_offset, x_offset_title, title, x_scale_sort=None, tooltip=None, tooltip_format=',.0f'):
+  if tooltip is None:
+    tooltip = [y]
+
+  # Aplica o formato às colunas numéricas do tooltip (texto fica intacto).
+  tooltip_fields = []
+  for campo in tooltip:
+    if isinstance(campo, alt.Tooltip):
+      tooltip_fields.append(campo)
+    elif campo in df.columns and pd.api.types.is_numeric_dtype(df[campo]):
+      tooltip_fields.append(alt.Tooltip(f'{campo}:Q', format=tooltip_format))
+    else:
+      tooltip_fields.append(campo)
+
   chart = (
     alt.Chart(df).mark_bar().encode(
       x=alt.X(f'{x}:O', title=x_title, sort=x_scale_sort),
       y=alt.Y(f'{y}:Q', title=y_title),
       xOffset=alt.XOffset(f'{x_offset}:N', title=x_offset_title),
       color=f'{x_offset}:N',
-      tooltip=[y]
+      tooltip=tooltip_fields
     ).properties(
       title=alt.TitleParams(
         text=title,

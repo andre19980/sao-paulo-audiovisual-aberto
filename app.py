@@ -10,19 +10,22 @@ eixo_2_page = st.Page(
   title="Eixo 2: Fomento à Produção Local e Independente",
   icon=":material/monitoring:"
 )
-
+eixo_3_page = st.Page(
+  "views/eixo_3/eixo_3_publico_consumo.py",
+  title="Eixo 3: Análise de Público e Consumo Cultural",
+  icon=":material/local_activity:"
+)
 eixo_4_page = st.Page(
   "views/eixo_4/eixo_4_coproducoes_internacionais.py",
   title="Eixo 4: Coproduções Internacionais e Filmagens Estrangeiras",
   icon=":material/partner_exchange:"
 )
-
 eixo_5_page = st.Page(
   "views/eixo_5/eixo_5_transparencia_fomento.py",
   title="Eixo 5: Transparência e Eficiência do Fomento Público",
   icon=":material/query_stats:"
 )
 
-pg = st.navigation([eixo_1_page, eixo_2_page, eixo_4_page, eixo_5_page])
+pg = st.navigation([eixo_1_page, eixo_2_page, eixo_3_page, eixo_4_page, eixo_5_page])
 st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:", layout="wide")
 pg.run()
