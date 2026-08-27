@@ -1,5 +1,10 @@
 import streamlit as st
 
+home = st.Page(
+  "views/home/home.py",
+  title="Introdução",
+  icon=":material/menu_book:"
+)
 eixo_1_page = st.Page(
   "views/eixo_1/eixo_1_mapeamento_oferta_cultural.py",
   title="Eixo 1: Mapeamento da Oferta Cultural",
@@ -26,6 +31,12 @@ eixo_5_page = st.Page(
   icon=":material/query_stats:"
 )
 
-pg = st.navigation([eixo_1_page, eixo_2_page, eixo_3_page, eixo_4_page, eixo_5_page])
+pg = st.navigation([home, eixo_1_page, eixo_2_page, eixo_3_page, eixo_4_page, eixo_5_page])
 st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:", layout="wide")
+st.logo('assets/logo-observatorio-horizontal.png', icon_image='assets/logo-observatorio.png', size='large')
+
+with st.sidebar:
+  with st.container(horizontal=True, horizontal_alignment='center'):
+    st.image('assets/logo_spcine-principal.png', width=96, link='https://spcine.com.br/')
+
 pg.run()
