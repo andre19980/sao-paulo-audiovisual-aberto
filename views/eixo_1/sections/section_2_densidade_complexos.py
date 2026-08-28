@@ -127,10 +127,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
   # usamos a aproximação pelo CEP: cada complexo recebe as coordenadas do
   # centróide do seu CEP, carregadas de um asset local (assets/cep_sp_coordenadas.csv).
   # ---------------------------------------------------------------------------
-
   df_cep_sp = pd.read_csv('assets/cep_sp_coordenadas.csv', dtype={'cep': str})
 
-  # Tabela de complexos de SP com quantidade de salas.
   df_complexos_sp_mapa = (
     df_salas_por_complexo_sp
       .reset_index()
@@ -147,13 +145,9 @@ def section(df_complexos_evolucao, df_salas_complexos):
   df_complexos_sp_mapa['CEP'] = df_complexos_sp_mapa['CEP_COMPLEXO'].astype(str).str.replace('-', '', regex=False)
   df_complexos_sp_mapa = df_complexos_sp_mapa.merge(df_cep_sp, left_on='CEP', right_on='cep', how='left')
 
-  # Fallback: complexos cujo CEP não está na base recebem o centro aproximado
-  # do município de São Paulo, em vez de ficarem fora do mapa.
-  n_fallback = df_complexos_sp_mapa['latitude'].isna().sum()
-  df_complexos_sp_mapa['latitude'] = df_complexos_sp_mapa['latitude'].fillna(-23.5505)
-  df_complexos_sp_mapa['longitude'] = df_complexos_sp_mapa['longitude'].fillna(-46.6333)
-  if n_fallback:
-    st.caption(f'{n_fallback} complexo(s) sem CEP na base receberam a localização aproximada do centro de São Paulo.')
+  # Complexos cujo CEP não está na base ficam de fora do mapa.
+  n_sem_cep = df_complexos_sp_mapa['latitude'].isna().sum()
+  df_complexos_sp_mapa = df_complexos_sp_mapa.dropna(subset=['latitude', 'longitude'])
 
   porte_faixas = [1, 2, 3, 10, 100]  # limites: 1, [2-3], [4-9], [10+]
   porte_rotulos = ['1 sala', 'Pequeno (2-3)', 'Médio (4-9)', 'Megaplex (10+)']
@@ -203,6 +197,8 @@ def section(df_complexos_evolucao, df_salas_complexos):
           'de círculos grandes mostram onde estão os cinemas multiprograma do município; '
           'o filtro "Porte do complexo" restringe o mapa às faixas escolhidas.'
         )
+        if n_sem_cep:
+          st.caption(f'{n_sem_cep} complexo(s) sem CEP na base não aparecem no mapa.')
 
     with col1:
       st.dataframe(

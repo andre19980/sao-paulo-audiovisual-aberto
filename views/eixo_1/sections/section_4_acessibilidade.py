@@ -4,9 +4,10 @@ import pandas as pd
 import json
 import unicodedata
 
-from charts.bar import plot_custom_grouped_bar_chart
+from charts.bar import plot_custom_grouped_bar_chart, plot_custom_stacked_bar_chart
 from charts.brazil_map import plot_custom_choropleth_brazil_map
-
+from charts.bubble import plot_custom_bubble_chart
+from charts.heatmap import plot_custom_heatmap
 
 def section(df_salas_complexos):
   st.header('Acessibilidade física')
@@ -102,7 +103,6 @@ def section(df_salas_complexos):
         )
         st.text('Salas pequenas (até 100 lugares) têm proporção muito menor de assentos para mobilidade reduzida e obesidade do que salas médias/grandes. Assentos para cadeirantes são praticamente universais em todos os portes. Rampa de acesso à sala é o critério mais raro, independentemente do porte.')
 
-
     with col2:
       with st.container(border=True):        
         plot_custom_grouped_bar_chart(
@@ -135,24 +135,19 @@ def section(df_salas_complexos):
           df_accel_cat['Assentos acessíveis'] / df_accel_cat['Total de assentos'] * 100
         ).round(2)
 
-        bar_prop_cat = (
-          alt.Chart(df_accel_cat)
-            .mark_bar(cornerRadiusEnd=3)
-            .encode(
-              x=alt.X('Categoria do exibidor:N', title='Categoria do exibidor', sort=ordem_categorias),
-              y=alt.Y('Proporção de assentos acessíveis (%):Q', title='% dos assentos destinado a Pessoas com Deficiência'),
-              color=alt.Color('Categoria do exibidor:N', title='Categoria do exibidor'),
-              tooltip=['Categoria do exibidor', 'Assentos acessíveis', 'Total de assentos', 'Proporção de assentos acessíveis (%)'],
-            )
-            .properties(
-              height=500,
-              title=alt.TitleParams(
-                text='Proporção real dos assentos acessíveis por categoria de exibidor (2026)',
-                anchor='start',
-              ),
-            )
+        plot_custom_stacked_bar_chart(
+          df=df_accel_cat,
+          x='Categoria do exibidor',
+          x_title='Categoria do exibidor',
+          y='Proporção de assentos acessíveis (%)',
+          y_title='% dos assentos destinado a Pessoas com Deficiência',
+          color='Categoria do exibidor',
+          color_title='Categoria do exibidor',
+          title='Proporção real dos assentos acessíveis por categoria de exibidor (2026)',
+          x_scale_sort=ordem_categorias,
+          tooltip=['Categoria do exibidor', 'Assentos acessíveis', 'Total de assentos', 'Proporção de assentos acessíveis (%)'],
+          height=500,
         )
-        st.altair_chart(bar_prop_cat)
         st.caption('Mede a quantidade efetiva de assentos acessíveis em relação ao total, não apenas se a oferta existe. Na proporção real, exibidores públicos destinam a menor fração de seus assentos a esse público, mesmo tendo boa presença de rampas.')
 
     with col2:
@@ -178,27 +173,22 @@ def section(df_salas_complexos):
         )
         df_indice_heatmap = grid_indice.merge(df_indice_heatmap, on=['Categoria do exibidor', 'Índice (0-6)'], how='left').fillna({'Número de salas': 0})
         df_indice_heatmap['Número de salas'] = df_indice_heatmap['Número de salas'].astype(int)
-      
-        heatmap_indice = (
-          alt.Chart(df_indice_heatmap)
-            .mark_rect(stroke='white', strokeWidth=2)
-            .encode(
-              x=alt.X('Índice (0-6):O', title='Índice composto (0-6)', scale=alt.Scale(paddingInner=0), axis=alt.Axis(labelAngle=0)),
-              y=alt.Y('Categoria do exibidor:O', title='Categoria do exibidor', scale=alt.Scale(paddingInner=0)),
-              color=alt.Color('raiz_salas:Q', title='Número de salas', scale=alt.Scale(scheme='turbo')),
-              tooltip=['Categoria do exibidor', 'Índice (0-6)', 'Número de salas'],
-            )
-            .transform_calculate(raiz_salas='sqrt(datum["Número de salas"])')
-            .properties(
-              width={'step': 70},
-              height={'step': 70},
-              title=alt.TitleParams(
-                text='Distribuição do índice composto de acessibilidade por categoria de exibidor (2026)',
-                anchor='start',
-              ),
-            )
+        df_indice_heatmap['raiz_salas'] = df_indice_heatmap['Número de salas'].astype(float).apply(lambda v: v ** 0.5)
+
+        plot_custom_heatmap(
+          df=df_indice_heatmap,
+          x='Índice (0-6)',
+          x_title='Índice composto (0-6)',
+          y='Categoria do exibidor',
+          y_title='Categoria do exibidor',
+          color='raiz_salas',
+          color_title='Número de salas',
+          title='Distribuição do índice composto de acessibilidade por categoria de exibidor (2026)',
+          cell_size=70,
+          color_scheme='turbo',
+          tooltip=['Categoria do exibidor', 'Índice (0-6)', 'Número de salas'],
+          x_label_angle=0,
         )
-        st.altair_chart(heatmap_indice)
         st.caption('Heatmap da contagem de salas por categoria e pontuação do índice (0-6, um ponto por recurso atendido: assentos para cadeirantes, mobilidade reduzida, obesidade, rampas nos assentos, rampa de acesso à sala e banheiros acessíveis). A cor usa escala de raiz quadrada, para que valores pequenos (1, 6, 8, 13) tenham contraste sem que o pico (251) esmague tudo; o número real aparece ao passar o mouse.')
       
         criterio_1 = (df_salas_acessibilidade_sp['ASSENTOS_CADEIRANTES'].notna()) & (df_salas_acessibilidade_sp['ASSENTOS_CADEIRANTES'] > 0)
@@ -221,7 +211,7 @@ def section(df_salas_complexos):
 
     # Cada entrada: (% de moradores em vulnerabilidade alta - grupos 5 e 6 do IPVS,
     # % em vulnerabilidade baixa - grupos 1 e 2). Fonte: SEADE, IPVS 2022.
-    # https://repositorio.seade.gov.br/dataset/ipvs-tabelas/resource/382bcf29-3e79-4c02-90d4-5c3f9c4a4c01?inner_span=True
+    # https://repositorio.seade.gov.br/dataset/ipvs-tabelas/resource/382bcf29-3e79-4c02-90d4-5c3f9c4a4c01
     with open("assets/ipvs-distritos.json", "r") as file:
       IPVS_DISTRITOS = json.load(file)
 
@@ -244,26 +234,35 @@ def section(df_salas_complexos):
 
     df_vuln_agg = df_vuln_agg.sort_values('Vuln alta (%)', ascending=False)
 
-    bubble_vuln = (
-      alt.Chart(df_vuln_agg)
-        .mark_circle(opacity=0.85)
-        .encode(
-          x=alt.X('Vuln alta (%):Q', title='População em vulnerabilidade alta (IPVS 2022, %)', scale=alt.Scale(zero=False)),
-          y=alt.Y('Indice_medio:Q', title='Índice médio de acessibilidade (0-6)', scale=alt.Scale(zero=False)),
-          size=alt.Size('Salas:Q', title='Salas em funcionamento', scale=alt.Scale(range=[40, 900])),
-          color=alt.Color('Altamente vulnerável:N', title='≥ 40% em vulnerabilidade alta', scale=alt.Scale(scheme='set1')),
-          tooltip=['Distrito', 'Salas', 'Indice_medio', 'Vuln alta (%)', 'Vuln baixa (%)'],
-        )
-        .properties(
-          height=460,
-          title=alt.TitleParams(
-            text='Oferta acessível de cinema por distrito por vulnerabilidade social (2026)',
-            anchor='start',
-          ),
-        )
+    plot_custom_bubble_chart(
+      df=df_vuln_agg,
+      x='Vuln alta (%)',
+      x_title='População em vulnerabilidade alta (IPVS 2022, %)',
+      y='Indice_medio',
+      y_title='Índice médio de acessibilidade (0-6)',
+      size='Salas',
+      size_title='Salas em funcionamento',
+      color='Altamente vulnerável',
+      color_title='≥ 40% em vulnerabilidade alta',
+      title='Oferta acessível de cinema por distrito por vulnerabilidade social (2026)',
+      tooltip_fields=['Distrito', 'Salas', 'Indice_medio', 'Vuln alta (%)', 'Vuln baixa (%)'],
+      color_scheme=['#e41a1c', '#377eb8'],
+      height=460,
+      size_range=[40, 900],
+      x_zero=False,
+      y_zero=False,
+      opacity=0.85,
     )
-    st.altair_chart(bubble_vuln)
-    st.caption('Cada bolha é um distrito: eixo X é a parcela da população em grupos de alta vulnerabilidade (IPVS 2022, grupos 5-6); eixo Y, o índice médio de acessibilidade das salas em funcionamento; o tamanho, o número de salas. Distritos com alta vulnerabilidade tendem a concentrar poucas salas — e, em geral, de menor acessibilidade.')
+    st.caption(
+      'Cada bolha é um distrito: eixo X é a parcela da população em grupos de alta '
+      'vulnerabilidade (IPVS 2022, grupos 5-6); eixo Y, o índice médio de acessibilidade '
+      'das salas em funcionamento; o tamanho, o número de salas. Distritos com alta '
+      'vulnerabilidade tendem a concentrar poucas salas — e, em geral, de menor acessibilidade. '
+      'Obs.: como a ANCINE registra apenas o bairro do complexo, foi necessário mapear os '
+      'bairros para os distritos oficiais do município (recorte do IPVS) para cruzar com o '
+      'índice de vulnerabilidade. '
+      'Fonte de dados disponível em https://repositorio.seade.gov.br/dataset/ipvs-tabelas/resource/382bcf29-3e79-4c02-90d4-5c3f9c4a4c01'
+    )
 
     distritos_sem_sala = sorted(
       {d for d in IPVS_DISTRITOS if IPVS_DISTRITOS[d][0] >= 40} - set(df_vuln_agg['Distrito'])
@@ -272,11 +271,9 @@ def section(df_salas_complexos):
       st.write('**Distritos com ≥ 40% da população em alta vulnerabilidade e sem nenhuma sala de cinema:** ' + ', '.join(distritos_sem_sala) + '.')
 
   
-  st.subheader('Diagnóstico de acessibilidade por estado (UF)')
-
+  st.subheader('Diagnóstico de acessibilidade por estado (UF)') 
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
-
     df_uf = df_salas_complexos[df_salas_complexos['SITUACAO_SALA'] == 'EM FUNCIONAMENTO'].copy()
 
     for col in ['ASSENTOS_CADEIRANTES', 'ASSENTOS_MOBILIDADE_REDUZIDA', 'ASSENTOS_OBESIDADE']:
@@ -312,26 +309,6 @@ def section(df_salas_complexos):
     )
     df_uf_heat['Critério'] = df_uf_heat['Critério'].str.replace('% ', '', regex=False)
 
-    heatmap_uf = (
-      alt.Chart(df_uf_heat)
-        .mark_rect()
-        .encode(
-          x=alt.X('Critério:N', title=None, axis=alt.Axis(labelAngle=70, labelLimit=180, labelPadding=8, labelOverlap=True)),
-          y=alt.Y('UF_COMPLEXO:N', title='Estado (ordenado pelo índice médio)', sort=df_uf_agg['UF_COMPLEXO'].tolist()),
-          color=alt.Color('% de salas:Q', title='% de salas com o recurso', scale=alt.Scale(scheme='inferno', domain=[0, 100])),
-          tooltip=['UF_COMPLEXO', 'Critério', '% de salas'],
-        )
-        .properties(
-          width='container',
-          height={ 'step': 22 },
-          title=alt.TitleParams(
-            text='Ranking dos estados por índice médio de acessibilidade das salas em funcionamento (2026)',
-            anchor='start',
-          ),
-        )
-    )
-
-    
     with col1:
       with st.container(border=True):
         df_uf_agg_map = df_uf_agg.rename(columns={'UF_COMPLEXO': 'UF'})
@@ -356,5 +333,23 @@ def section(df_salas_complexos):
 
     with col2:
       with st.container(border=True):
-        st.altair_chart(heatmap_uf)
+        plot_custom_heatmap(
+          df=df_uf_heat,
+          x='Critério',
+          x_title=None,
+          y='UF_COMPLEXO',
+          y_title='Estado (ordenado pelo índice médio)',
+          color='% de salas',
+          color_title='% de salas com o recurso',
+          title='Ranking dos estados por índice médio de acessibilidade das salas em funcionamento (2026)',
+          color_scheme='inferno',
+          color_domain_min=0,
+          color_domain_max=100,
+          show_grid=False,
+          tooltip=['UF_COMPLEXO', 'Critério', '% de salas'],
+          x_label_angle=70,
+          y_scale_sort=df_uf_agg['UF_COMPLEXO'].tolist(),
+          width='container',
+          height={'step': 22},
+        )
         st.caption('Ranking das UFs pelo índice composto médio (0-6, um ponto por recurso: assentos para cadeirantes, mobilidade reduzida, obesidade, rampa nos assentos, rampa de acesso à sala e banheiros acessíveis), considerando apenas salas em funcionamento. Cada célula é o percentual de salas da UF que atende ao critério; quanto mais quente, maior a cobertura. As UFs estão ordenadas pelo índice composto médio — no topo Roraima (4,85) e no fim Acre (2,43). O líder é Roraima (4,85) e o último, Acre (2,43). A variância é maior nos critérios mais raros: rampa de acesso à sala (de 0% no Acre a 48,5% no Mato Grosso) e banheiros acessíveis (de 37% em Tocantins a 100% no Acre).')

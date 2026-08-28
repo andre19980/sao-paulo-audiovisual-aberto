@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 from charts.line import plot_custom_line_chart
 from charts.bar import plot_custom_grouped_bar_chart

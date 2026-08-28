@@ -7,7 +7,7 @@ with st.container(horizontal=True, horizontal_alignment='center'):
 st.title('Audiovisual SP Aberto')
 st.markdown(
   """
-  O **Audiovisual SP Aberto** é um painel interativo produzido [Observatório Spcine](https://spcine.com.br/observatorio/) que reúne, em um só lugar, dados
+  O **Audiovisual SP Aberto** é um painel interativo produzido pelo [Observatório Spcine](https://spcine.com.br/observatorio/) que reúne, em um só lugar, dados
   públicos do setor audiovisual brasileiro para apoiar a análise, o planejamento e a
   transparência das políticas públicas voltadas ao audiovisual. A partir de dados
   abertos da **Ancine**, o painel oferece uma visão ampla do setor, com foco especial

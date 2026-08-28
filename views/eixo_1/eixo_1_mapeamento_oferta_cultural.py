@@ -19,12 +19,6 @@ df_salas_complexos = load_data(DATA_URLS['salas_de_exibicao_e_complexos'])
 df_salas_evolucao = load_data(DATA_URLS['salas_evolucao'])
 df_complexos_evolucao = load_data(DATA_URLS['complexos_evolucao'])
 
-# Exibe dados brutos para fins de debug
-# st.text('Raw data')
-# st.write(df_salas_complexos)
-# st.write(df_salas_evolucao)
-# st.write(df_complexos_evolucao)
-
 tab1, tab2, tab3, tab4 = st.tabs([
   'Evolução de espaços',
   'Densidade por complexos',

@@ -82,12 +82,6 @@ def section(df_salas_complexos):
         .sort_values(by='NÚMERO DE SALAS', ascending=False)
     )
 
-    df_pivot_operacao = df_salas_por_categoria_operacao.pivot(
-      index='CATEGORIA',
-      columns='OPERAÇÃO USUAL',
-      values='NÚMERO DE SALAS'
-    ).fillna(0).reset_index()
-    
     with col1:
       with st.container(border=True): 
         st.markdown('''

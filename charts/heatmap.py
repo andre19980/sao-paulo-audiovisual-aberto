@@ -3,7 +3,7 @@ import altair as alt
 import pandas as pd
 import json
 
-def plot_custom_heatmap(df, x, x_title, y, y_title, color, color_title, title, cell_size=80, show_grid=True, grid_color='white', color_scheme='blues', log_color=False, color_domain_min=None, color_domain_max=None, invalid_color=None, tooltip=None, tooltip_format=',.0f'):
+def plot_custom_heatmap(df, x, x_title, y, y_title, color, color_title, title, cell_size=80, show_grid=True, grid_color='white', color_scheme='blues', log_color=False, color_domain_min=None, color_domain_max=None, invalid_color=None, tooltip=None, tooltip_format=',.0f', x_label_angle=None, y_scale_sort=None, width=None, height=None):
   scale_kwargs = {'scheme': color_scheme}
   if log_color:
     scale_kwargs['type'] = 'log'
@@ -50,18 +50,26 @@ def plot_custom_heatmap(df, x, x_title, y, y_title, color, color_title, title, c
       t['as']: t['calculate'] for t in tooltip_transforms
     })
 
+  x_axis = alt.X(f'{x}:O', title=x_title, scale=alt.Scale(paddingInner=0))
+  if x_label_angle is not None:
+    x_axis = alt.X(f'{x}:O', title=x_title, scale=alt.Scale(paddingInner=0), axis=alt.Axis(labelAngle=x_label_angle))
+
+  y_axis = alt.Y(f'{y}:O', title=y_title, scale=alt.Scale(paddingInner=0))
+  if y_scale_sort is not None:
+    y_axis = alt.Y(f'{y}:O', title=y_title, sort=y_scale_sort, scale=alt.Scale(paddingInner=0))
+
   chart = (
     chart_base.mark_rect(
       stroke=grid_color if show_grid else None,
       strokeWidth=2 if show_grid else 0,
     ).encode(
-      x=alt.X(f'{x}:O', title=x_title, scale=alt.Scale(paddingInner=0)),
-      y=alt.Y(f'{y}:O', title=y_title, scale=alt.Scale(paddingInner=0)),
+      x=x_axis,
+      y=y_axis,
       color=alt.Color(f'{color}:Q', title=color_title, scale=alt.Scale(**scale_kwargs)),
       tooltip=tooltip_fields
     ).properties(
-      width={'step': cell_size},
-      height={'step': cell_size},
+      width=width if width is not None else {'step': cell_size},
+      height=height if height is not None else {'step': cell_size},
       title=alt.TitleParams(
         text=title,
         anchor='start'

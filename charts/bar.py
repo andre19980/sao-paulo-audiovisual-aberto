@@ -189,14 +189,62 @@ def plot_custom_layered_bar_chart(df, x, x_title, y, y_title, color, color_title
 
   return
 
-def plot_custom_stacked_bar_chart(df, x, x_title, y, y_title, color, color_title, title):
+def plot_custom_stacked_bar_chart(df, x, x_title, y, y_title, color, color_title, title, x_scale_sort=None, tooltip=None, tooltip_format=',.0f', height=None):
+  """Barra vertical com uma barra por categoria, colorida pela própria categoria.
+
+  Útil para comparar uma medida (eixo Y) entre categorias do eixo X, dando uma
+  cor distinta para cada categoria (ex.: proporção de assentos acessíveis por
+  categoria de exibidor).
+
+  Parâmetros
+  ----------
+  df : pd.DataFrame
+    Dataset com as colunas apontadas por 'x', 'y' e 'color'.
+  x : str
+    Coluna categórica do eixo X.
+  x_title : str
+    Título do eixo X.
+  y : str
+    Coluna numérica com o valor das barras (eixo Y).
+  y_title : str
+    Título do eixo Y.
+  color : str
+    Coluna categórica que dá cor a cada barra (mesma de 'x' na maioria dos casos).
+  color_title : str
+    Título da legenda de cor.
+  title : str
+    Título do gráfico.
+  x_scale_sort : list | None
+    Ordem das categorias no eixo X (default None = ordem dos dados).
+  tooltip : list | None
+    Campos do tooltip (default [x, color, y]). Colunas numéricas recebem
+    'tooltip_format'.
+  tooltip_format : str
+    Formato (d3-format) das colunas numéricas no tooltip (default ',.0f').
+  height : int | None
+    Altura do gráfico em pixels (default None = automática).
+  """
+  if tooltip is None:
+    tooltip = [x, color, y]
+
+  # Aplica o formato às colunas numéricas do tooltip (texto fica intacto).
+  tooltip_fields = []
+  for campo in tooltip:
+    if isinstance(campo, alt.Tooltip):
+      tooltip_fields.append(campo)
+    elif campo in df.columns and pd.api.types.is_numeric_dtype(df[campo]):
+      tooltip_fields.append(alt.Tooltip(f'{campo}:Q', format=tooltip_format))
+    else:
+      tooltip_fields.append(campo)
+
   chart = (
     alt.Chart(df).mark_bar().encode(
-      x=alt.X(f'{x}:O', title=x_title),
+      x=alt.X(f'{x}:O', title=x_title, sort=x_scale_sort),
       y=alt.Y(f'{y}:Q', title=y_title, stack='zero'),
       color=alt.Color(f'{color}:N', title=color_title),
-      tooltip=[x, color, y]
+      tooltip=tooltip_fields
     ).properties(
+      height=height,
       title=alt.TitleParams(
         text=title,
         anchor='start'
