@@ -32,19 +32,6 @@ df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'] = df_filmagens['NR_TECNICOS_AR
 df_agentes['DATA_REGISTRO'] = pd.to_datetime(df_agentes['DATA_REGISTRO'], errors='coerce', dayfirst=True)
 df_agentes['ANO_REGISTRO'] = df_agentes['DATA_REGISTRO'].dt.year
 
-# Exibição dos dados para fins de debug
-# st.subheader('Visão geral dos dados carregados')
-# st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
-#          f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
-# st.dataframe(df_obras.head(20))
-
-# st.subheader('Coproduções')
-# st.dataframe(df_coproducoes)
-# st.subheader('Filmagens')
-# st.write(df_filmagens)
-# st.subheader('Agentes internacionais')
-# st.write(df_agentes)
-
 tab1, tab2, tab3 = st.tabs([
   'Coproduções internacionais',
   'Filmagens estrangeiras',

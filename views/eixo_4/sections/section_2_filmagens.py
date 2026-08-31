@@ -10,7 +10,7 @@ def section(df_filmagens):
   
   total_filmagens = len(df_filmagens)
   total_paises = len(df_filmagens[(df_filmagens['PAIS'] != 'Sem informação') & (df_filmagens['PAIS'] != 'Não é país')]['PAIS'].unique())
-  total_tecnicos_artistas = pd.to_numeric(df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'], errors='coerce').sum()
+  total_tecnicos_artistas = df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'].sum()
   
   with st.container(horizontal=True):
     st.metric('Total de filmagens', total_filmagens, border=True)
@@ -63,10 +63,11 @@ def section(df_filmagens):
     with col1:
       st.markdown('**Tabela de quantidade de filmagens por país**')
       st.table(df_pais_filmagem, border='horizontal', height=520, hide_index=True)
-      
+    
+    paises_validos = (df_pais_filmagem['País'] != 'Sem informação') & (df_pais_filmagem['País'] != 'Não é país')
     with col2:
       plot_custom_ranking_bar_chart(
-        df=df_pais_filmagem.head(15),
+        df=df_pais_filmagem[paises_validos].head(15),
         x='Quantidade',
         x_title='Número de filmagens',
         y='País',
@@ -84,7 +85,7 @@ def section(df_filmagens):
       )
 
   st.subheader('Técnicos e artistas estrangeiros')
-  df_filmagens['TEC'] = pd.to_numeric(df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS'], errors='coerce')
+  df_filmagens['TEC'] = df_filmagens['NR_TECNICOS_ARTISTAS_ESTRANGEIROS']
   media_tec = df_filmagens['TEC'].mean()
   max_tec = df_filmagens['TEC'].max()
 

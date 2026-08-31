@@ -82,7 +82,7 @@ def section(df_coproducoes, df_obras):
         step=30,
       )
       st.caption(
-        'Ranking dos acordos de coprodução pelo número de obras. O Acordo Latino-Americano lidera '
+        'Ranking dos acordos de coprodução pelo número de obras cosiderando as que **possuem acordo formal**. O Acordo Latino-Americano lidera '
         '(144 obras, 41,5%), seguido do acordo com Portugal (77) e com a França (40).'
       )
 
@@ -107,7 +107,7 @@ def section(df_coproducoes, df_obras):
         tooltip=['PART_PATRIMONIAL_BRASILEIRA', 'ACORDO_COPRODUCAO', 'QTD'],
       )
       st.caption(
-        'Heatmap do número de obras por participação patrimonial brasileira e acordo de '
+        'Heatmap do número de obras por participação patrimonial brasileira e **acordo formal** de '
         'coprodução. A cor usa escala logarítmica, já que poucos pares concentram muitos títulos '
         'e a maioria tem poucas obras. Combinações sem obras ficam em cinza.'
       )
