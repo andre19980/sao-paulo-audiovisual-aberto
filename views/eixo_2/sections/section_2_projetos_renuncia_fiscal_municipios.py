@@ -1,32 +1,15 @@
 import pandas as pd
 import streamlit as st
 
-from lib.normalizers import converte_moeda, normaliza_cnpj, normaliza_municipio
-
 from charts.bar import plot_custom_layered_bar_chart, plot_custom_ranking_bar_chart
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 from charts.bubble import plot_custom_bubble_chart
 from charts.heatmap import plot_custom_heatmap
 from charts.pie import plot_custom_pie_chart
 from charts.line import plot_custom_line_chart
+from charts.hist import plot_custom_histogram_chart
 
 def section(df_projetos_renfisc, df_produtoras_independentes):
-  # Normaliza o município do proponente
-  df_projetos_renfisc['MUNICIPIO_PROPONENTE'] = (
-    df_projetos_renfisc['MUNICIPIO_PROPONENTE'].map(normaliza_municipio)
-  )
-
-  colunas_monetarias = [
-    'CAPTADO_ART1', 'CAPTADO_ART1A', 'CAPTADO_ART3', 'CAPTADO_ART3A',
-    'CAPTADO_ART18', 'CAPTADO_ART25', 'CAPTADO_ART39', 'CAPTADO_FUNCINES',
-    'CAPTADO_EDITAL_ANCINE', 'CAPTADO_PAR', 'CAPTADO_PAQ', 'CAPTADO_OUTROS_EDITAIS',
-    'CAPTADO_LEI_ESTADUAL', 'CAPTADO_LEI_MUNICIPAL', 'CAPTADO_OUTRAS_FONTES',
-    'CAPTADO_CONTRAPARTIDA', 'CAPTADO_CONVERSAO', 'TOTAL_CAPTADO'
-  ]
-
-  for col in colunas_monetarias:
-    df_projetos_renfisc[col] = df_projetos_renfisc[col].apply(converte_moeda)
-
   st.header('Renúncia fiscal e captação por localidade')
   col_metric1, col_metric2, col_metric3 = st.columns([1, 1, 1], gap='large')
   with col_metric1:
@@ -122,7 +105,6 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
       )
     
     with col2:
-      # Participação de cada mecanismo de captação.
       mecanismos = {
         'Art. 1º': 'CAPTADO_ART1',
         'Art. 1º-A': 'CAPTADO_ART1A',
@@ -178,6 +160,7 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
   )
   df_mec_uf['Mecanismo'] = df_mec_uf['COL_MEC'].map({v: k for k, v in mecanismos.items()})
   df_mec_uf = df_mec_uf.groupby(['UF_PROPONENTE', 'Mecanismo'], as_index=False)['Total captado'].sum()
+  
   # Estados sem captação no mecanismo ficam como NaN (sem preenchimento). Isso é necessário
   # porque a escala logarítmica não aceita valor 0 (log(0) = -∞), o que colapsa o domínio
   # e pinta todas as células da mesma cor.
@@ -304,8 +287,6 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
         )
       
   df_produtoras_ind_sp = df_produtoras_independentes[df_produtoras_independentes['MUNICIPIO'] == 'SÃO PAULO']
-  df_produtoras_ind_sp['CNPJ_LIMPO'] = df_produtoras_ind_sp['CNPJ'].apply(normaliza_cnpj)
-  df_projetos_renfisc['CNPJ_LIMPO'] = df_projetos_renfisc['CNPJ_PROPONENTE'].apply(normaliza_cnpj)
   df_produtoras_sp_captacao = pd.merge(
     df_produtoras_ind_sp,
     df_projetos_renfisc,
@@ -369,7 +350,6 @@ def section(df_projetos_renfisc, df_produtoras_independentes):
           for f in faixas_capt
         ],
       })
-      from charts.hist import plot_custom_histogram_chart
       plot_custom_histogram_chart(
         df=df_faixas_capt,
         x='Faixa',

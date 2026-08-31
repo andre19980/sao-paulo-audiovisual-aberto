@@ -1,13 +1,9 @@
-import json
-
 import pandas as pd
 import streamlit as st
 import unicodedata
-import altair as alt
-import numpy as np
+import json
 
 from lib.getters import capitais_brasileiras, uf_capitais_brasileiras
-from lib.normalizers import normaliza_cnpj
 from lib.checkers import checa_cnpj
 
 from charts.bar import plot_custom_ranking_bar_chart
@@ -15,12 +11,7 @@ from charts.hist import plot_custom_histogram_chart
 from charts.brazil_map import plot_custom_brazil_map
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 
-def section(df_produtoras_independentes, df_produtores):  
-  produtoras_independentes_cnpj = df_produtoras_independentes['CNPJ'].apply(checa_cnpj)
-  
-  df_produtoras_independentes['CNPJ_LIMPO'] = df_produtoras_independentes['CNPJ'].apply(normaliza_cnpj)
-  df_produtores['CNPJ_LIMPO'] = df_produtores['CNPJ_PRODUTOR'].apply(normaliza_cnpj)
-  
+def section(df_produtoras_independentes, df_produtores):
   df_merge_produtores = df_produtoras_independentes.merge(
     df_produtores,
     on='CNPJ_LIMPO',
@@ -40,6 +31,7 @@ def section(df_produtoras_independentes, df_produtores):
   
   st.header('Produtoras independentes e obras no município de São Paulo')
   with st.container(horizontal=True, horizontal_alignment='right'):
+    produtoras_independentes_cnpj = df_produtoras_independentes['CNPJ'].apply(checa_cnpj)
     if (produtoras_independentes_cnpj == 'CNPJ VÁLIDO').all():
       st.badge("Verificação de CNPJ sem erros", icon=":material/check:", color="green")
     else:
@@ -198,7 +190,6 @@ def section(df_produtoras_independentes, df_produtores):
         
 
   st.subheader('Distribuição de produtoras e obras por estado')
-  # Choropleth: produtoras independentes por estado (UF)
   df_uf_produtoras = (
     df_produtividade.groupby('UF')['REGISTRO_ANCINE']
       .count()
@@ -207,7 +198,6 @@ def section(df_produtoras_independentes, df_produtores):
       .sort_values('TOTAL_PRODUTORAS', ascending=False)
   )
 
-  # Barra de ranking: total de obras por estado
   df_uf_obras = (
     df_produtividade.groupby('UF')['QTD_OBRAS']
       .sum()
