@@ -11,14 +11,7 @@ DATA_URLS = {
 
 st.title('Eixo 3 - Análise de Público e Consumo Cultural')
 
-df_lancamentos = load_data(DATA_URLS['lancamentos_comerciais'])
 df_obras = load_obras_brasileiras(DATA_URLS['obras'])
-
-# Amostras para fins de debug
-# st.subheader('Lançamentos comerciais por distribuidora')
-# st.write(df_lancamentos)
-
-# st.subheader('Obras')
-# st.write(df_obras.head(20))
+df_lancamentos = load_data(DATA_URLS['lancamentos_comerciais'])
 
 section(df_lancamentos, df_obras)

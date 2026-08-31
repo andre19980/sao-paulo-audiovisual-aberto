@@ -28,10 +28,6 @@ municipios_conflitantes = checa_municipio(df_produtoras_independentes['MUNICIPIO
 for normalizado, original in municipios_conflitantes.items():
   df_produtoras_independentes['MUNICIPIO'] = df_produtoras_independentes['MUNICIPIO'].replace(original, normalizado)
 
-municipios_conflitantes = checa_municipio(df_obras['MUNICIPIO_REQUERENTE'])
-for normalizado, original in municipios_conflitantes.items():
-  df_obras['MUNICIPIO_REQUERENTE'] = df_obras['MUNICIPIO_REQUERENTE'].replace(original, normalizado)
-
 df_projetos_renfisc['MUNICIPIO_PROPONENTE'] = (
   df_projetos_renfisc['MUNICIPIO_PROPONENTE'].map(normaliza_municipio)
 )

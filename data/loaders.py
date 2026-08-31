@@ -5,6 +5,8 @@ import io
 import zipfile
 import urllib.request
 
+from lib.checkers import checa_municipio
+
 @st.cache_data(scope='session')
 def load_data(url):
   data = pd.read_csv(url, sep=';')
@@ -37,4 +39,9 @@ def load_obras_brasileiras(url):
       frames.append(df_ano)
 
   df = pd.concat(frames, ignore_index=True)
+  
+  municipios_conflitantes = checa_municipio(df['MUNICIPIO_REQUERENTE'])
+  for normalizado, original in municipios_conflitantes.items():
+    df['MUNICIPIO_REQUERENTE'] = df['MUNICIPIO_REQUERENTE'].replace(original, normalizado)
+
   return df

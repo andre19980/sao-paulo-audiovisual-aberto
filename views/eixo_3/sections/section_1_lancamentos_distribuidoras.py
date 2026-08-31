@@ -180,7 +180,7 @@ def section(df_lancamentos, df_obras):
         step=26,
       )
 
-  st.subheader('Evolução de obras e píblico por ano de lançamento')
+  st.subheader('Evolução de obras e público por ano de lançamento')
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large', border=True)
     
