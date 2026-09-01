@@ -43,8 +43,4 @@ else:
   st.set_page_config(page_title="Audiovisual SP Aberto", page_icon=":material/animated_images:", layout="wide")
   st.logo('assets/logo-observatorio-horizontal.png', icon_image='assets/logo-observatorio.png', size='large')
 
-  with st.sidebar:
-    with st.container(horizontal=True, horizontal_alignment='center'):
-      st.image('assets/logo_spcine-principal.png', width=96, link='https://spcine.com.br/')
-
   pg.run()

@@ -16,6 +16,13 @@ DATA_URL = {
   'projetos_renuncia_fiscal': 'https://dados.ancine.gov.br/dados-abertos/projetos-com-renuncia-fiscal.csv',
 }
 
+DATA_PAGE_SOURCE = {
+  'Obras Não Publicitárias': 'https://dados.gov.br/dados/conjuntos-dados/obras-nao-publicitarias-brasileiras-registradas-na-ancine',
+  'Produtores de Obras Não Publicitárias': 'https://dados.gov.br/dados/conjuntos-dados/produtores-de-obras-nao-publicitarias-brasileiras',
+  'Produtoras Independentes Regulares': 'https://dados.gov.br/dados/conjuntos-dados/produtoras-independentes-regulares-registradas-na-ancine',
+  'Captação por Renúncia Fiscal': 'https://dados.gov.br/dados/conjuntos-dados/relacao-de-projetos-com-valores-captados-por-mecanismo-de-renuncia-fiscal'
+}
+
 st.title('Eixo 2 - Fomento à Produção Local e Independente (Obras Não Publicitárias Brasileiras)')
 
 df_obras = load_obras_brasileiras(DATA_URL['obras'])
@@ -46,6 +53,14 @@ for col in colunas_monetarias:
 df_produtoras_independentes['CNPJ_LIMPO'] = df_produtoras_independentes['CNPJ'].apply(normaliza_cnpj)
 df_produtores['CNPJ_LIMPO'] = df_produtores['CNPJ_PRODUTOR'].apply(normaliza_cnpj)
 df_projetos_renfisc['CNPJ_LIMPO'] = df_projetos_renfisc['CNPJ_PROPONENTE'].apply(normaliza_cnpj)
+
+with st.sidebar:
+  st.caption('Links para fontes de dados:')
+  with st.container(horizontal=False):
+    for nome, link in DATA_PAGE_SOURCE.items():
+      st.link_button(nome, link, width='stretch')
+  with st.container(horizontal=True, horizontal_alignment='center'):
+    st.image('assets/logo_spcine-principal.png', width=96, link='https://spcine.com.br/')
 
 tab1, tab2, tab3 = st.tabs([
   'Produtoras independentes e obras',

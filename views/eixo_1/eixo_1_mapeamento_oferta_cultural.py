@@ -13,11 +13,25 @@ DATA_URLS = {
   'complexos_evolucao': 'https://dados.ancine.gov.br/dados-abertos/complexos-cinematograficos-evolucao-anual.csv'
 }
 
+DATA_PAGE_SOURCE = {
+  'Salas de Exibição e Complexos': 'https://dados.gov.br/dados/conjuntos-dados/salas-de-exibicao-e-complexos-registrados-na-ancine',
+  'Salas de Exibição - Evolução Anual': 'https://dados.gov.br/dados/conjuntos-dados/salas-de-exibicao---evolucao-anual',
+  'Complexos - Evolução Anual': 'https://dados.gov.br/dados/conjuntos-dados/complexos-cinematograficos---evolucao-anual',
+}
+
 st.title('Eixo 1 - Mapeamento da Oferta Cultural (Cinemas e Salas de Exibição)')
 
 df_salas_complexos = load_data(DATA_URLS['salas_de_exibicao_e_complexos'])
 df_salas_evolucao = load_data(DATA_URLS['salas_evolucao'])
 df_complexos_evolucao = load_data(DATA_URLS['complexos_evolucao'])
+
+with st.sidebar:
+  st.caption('Links para fontes de dados:')
+  with st.container(horizontal=False):
+    for nome, link in DATA_PAGE_SOURCE.items():
+      st.link_button(nome, link, width='stretch')
+  with st.container(horizontal=True, horizontal_alignment='center'):
+    st.image('assets/logo_spcine-principal.png', width=96, link='https://spcine.com.br/')
 
 tab1, tab2, tab3, tab4 = st.tabs([
   'Evolução de espaços',
