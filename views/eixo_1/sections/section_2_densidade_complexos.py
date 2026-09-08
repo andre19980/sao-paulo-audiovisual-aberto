@@ -149,6 +149,18 @@ def section(df_complexos_evolucao, df_salas_complexos):
   n_sem_cep = df_complexos_sp_mapa['latitude'].isna().sum()
   df_complexos_sp_mapa = df_complexos_sp_mapa.dropna(subset=['latitude', 'longitude'])
 
+  # Marca os complexos que são unidades do circuito Spcine, para destaque no mapa.
+  with open('assets/spcine-unidades.json', 'r', encoding='utf-8') as file:
+    spcine_unidades = json.load(file)
+  spcine_complexos = {u['complexo_ancine'] for u in spcine_unidades}
+  df_complexos_sp_mapa['Rede Spcine'] = df_complexos_sp_mapa['NOME_COMPLEXO'].map(
+    lambda nome: 'Spcine' if nome in spcine_complexos else 'Demais'
+  )
+  # Unidades Spcine opacas; demais com transparência.
+  df_complexos_sp_mapa['Opacidade'] = df_complexos_sp_mapa['Rede Spcine'].map(
+    {'Spcine': 1.0, 'Demais': 0.4}
+  )
+
   porte_faixas = [1, 2, 3, 10, 100]  # limites: 1, [2-3], [4-9], [10+]
   porte_rotulos = ['1 sala', 'Pequeno (2-3)', 'Médio (4-9)', 'Megaplex (10+)']
   df_complexos_sp_mapa['Porte'] = pd.cut(
@@ -181,21 +193,23 @@ def section(df_complexos_evolucao, df_salas_complexos):
           label='NOME_COMPLEXO',
           size='QUANTIDADE_DE_SALAS',
           size_title='Quantidade de salas',
-          color='QUANTIDADE_DE_SALAS',
-          color_title='Quantidade de salas',
+          color='Rede Spcine',
+          color_title='Rede',
           title='Distribuição da quantidade de salas por complexo no município de São Paulo (2026)',
           lat_col='latitude',
           lon_col='longitude',
-          # Domínio fixo baseado no máximo de salas (sem filtro) para que a legenda
-          # não colapse quando o filtro deixa só um valor de salas.
-          color_scale_domain=[0, df_complexos_sp_mapa['QUANTIDADE_DE_SALAS'].max()],
+          color_type='N',
+          color_scheme=['#3b82f6', '#f59e0b'],
+          opacity_col='Opacidade',
           size_scale_domain=[0, df_complexos_sp_mapa['QUANTIDADE_DE_SALAS'].max()],
+          tooltip_fields=['NOME_COMPLEXO', 'Rede Spcine', 'QUANTIDADE_DE_SALAS'],
         )
         st.caption(
           'Cada círculo é um complexo de cinema, posicionado pelas coordenadas aproximadas '
-          'do seu CEP. O tamanho e a cor indicam o número de salas do complexo. Concentrações '
-          'de círculos grandes mostram onde estão os cinemas multiprograma do município; '
-          'o filtro "Porte do complexo" restringe o mapa às faixas escolhidas.'
+          'do seu CEP. O tamanho indica o número de salas do complexo e a cor identifica se a '
+          'unidade faz parte do circuito Spcine (laranja, opaco) ou não (azul, translúcido). '
+          'Concentrações de círculos grandes mostram onde estão os cinemas multiprograma do '
+          'município; o filtro "Porte do complexo" restringe o mapa às faixas escolhidas.'
         )
         if n_sem_cep:
           st.caption(f'{n_sem_cep} complexo(s) sem CEP na base não aparecem no mapa.')

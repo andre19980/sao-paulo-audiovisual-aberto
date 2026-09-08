@@ -1,0 +1,157 @@
+[
+  {
+    "unidade": "Spcine Aricanduva",
+    "endereco": "Av. Olga Fadel Abarca, s/n - Jardim Santa Teresinha",
+    "complexo_ancine": "CEU ARICANDUVA - PROFESSORA IRENE GALVÃO DE SOUZA"
+  },
+  {
+    "unidade": "Spcine Arthur Alvim",
+    "endereco": "Av. Sylvio Torres, 295",
+    "complexo_ancine": "CEU ARTHUR ALVIM"
+  },
+  {
+    "unidade": "Spcine Barro Branco",
+    "endereco": "R. Numa Pompílio, s/n - Conj. Habitacional Barro Branco II - Cidade Tiradentes",
+    "complexo_ancine": "CEU BARRO BRANCO"
+  },
+  {
+    "unidade": "Spcine Biblioteca Roberto Santos",
+    "endereco": "R. Cisplatina, 505 - Ipiranga",
+    "complexo_ancine": "BIBLIOTECA ROBERTO SANTOS"
+  },
+  {
+    "unidade": "Spcine Butantã",
+    "endereco": "Av. Eng. Heitor Antônio Eiras Garcia, 1870 - Jardim Esmeralda",
+    "complexo_ancine": "CEU BUTANTÃ - PROFESSORA ELISABETH GASPAR TUNALA"
+  },
+  {
+    "unidade": "Spcine Caminho do Mar",
+    "endereco": "Rua Engenheiro Armando de Arruda Pereira, 5241 - Jabaquara",
+    "complexo_ancine": "CEU CAMINHO DO MAR - PROFESSORA DULCE SALLES CUNHA BRAGA"
+  },
+  {
+    "unidade": "Spcine Carrão",
+    "endereco": "R. Monte Serrat, 380 - Carrão",
+    "complexo_ancine": "CEU CARRÃO"
+  },
+  {
+    "unidade": "Spcine CCSP",
+    "endereco": "R. Vergueiro, 1000 - Liberdade",
+    "complexo_ancine": "CENTRO CULTURAL SÃO PAULO"
+  },
+  {
+    "unidade": "Spcine CFC Cidade Tiradentes",
+    "endereco": "R. Inácio Monteiro, 6900 - Conj. Hab. Sítio Conceição",
+    "complexo_ancine": "CENTRO DE FORMAÇÃO CULTURAL DE CIDADE TIRADENTES"
+  },
+  {
+    "unidade": "Spcine Feitiço da Vila",
+    "endereco": "Rua Feitiço da Vila, 399 - Jardim Dom José",
+    "complexo_ancine": "CEU FEITIÇO DA VILA - DEPUTADO PROF. JOSÉ FREITAS NOBRE"
+  },
+  {
+    "unidade": "Spcine Freguesia do Ó",
+    "endereco": "R. Crespo de Carvalho, 71 - Freguesia do Ó",
+    "complexo_ancine": "CEU FREGUESIA DO Ó"
+  },
+  {
+    "unidade": "Spcine Jambeiro",
+    "endereco": "Av. José Pinheiro Borges, 60 - Guaianases",
+    "complexo_ancine": "CEU JAMBEIRO - JOSÉ GUILHERME GIANETTI"
+  },
+  {
+    "unidade": "Spcine Jaçanã",
+    "endereco": "R. Francisca Espósito Tonetti, 105 - Jardim Guapira",
+    "complexo_ancine": "CEU JAÇANÃ"
+  },
+  {
+    "unidade": "Spcine Meninos",
+    "endereco": "Rua Barbinos, 111 - São João Clímaco - Ipiranga",
+    "complexo_ancine": "CEU MENINOS - PROFESSOR PR. ARTUR ALBERTO DE MOTA GONÇALVES"
+  },
+  {
+    "unidade": "Spcine Olido",
+    "endereco": "Av. São João, 473 - Centro Histórico de São Paulo",
+    "complexo_ancine": "GALERIA OLIDO"
+  },
+  {
+    "unidade": "Spcine Parque do Carmo",
+    "endereco": "R. Gaspar da Silva, 240 - Parque do Carmo",
+    "complexo_ancine": "CEU PARQUE DO CARMO"
+  },
+  {
+    "unidade": "Spcine Parque Novo Mundo",
+    "endereco": "Av. Ernesto Augusto Lopes, 100 - Parque Vila Maria",
+    "complexo_ancine": "CEU PARQUE NOVO MUNDO"
+  },
+  {
+    "unidade": "Spcine Parque Veredas",
+    "endereco": "R. Daniel Müller, 347 - Chácara Dona Olívia",
+    "complexo_ancine": "CEU PARQUE VEREDAS - JOÃO ANTÔNIO SILVA"
+  },
+  {
+    "unidade": "Spcine Paz",
+    "endereco": "Rua Daniel Cerri, 1549 - Jardim Paraná",
+    "complexo_ancine": "CEU PAZ"
+  },
+  {
+    "unidade": "Spcine Perus",
+    "endereco": "R. Bernardo José de Lorena, s/n - Vila Fanton",
+    "complexo_ancine": "CEU PERUS"
+  },
+  {
+    "unidade": "Spcine Pinheirinho",
+    "endereco": "Rua Camillo Zanotti - Jaraguá",
+    "complexo_ancine": "CEU PINHEIRINHO"
+  },
+  {
+    "unidade": "Spcine Quinta do Sol",
+    "endereco": "Rua Otto Cordes, 50 - Parque Cisper",
+    "complexo_ancine": "CEU QUINTA DO SOL"
+  },
+  {
+    "unidade": "Spcine São Miguel",
+    "endereco": "R. José Ferreira Crespo, 475 - Jardim São Vicente",
+    "complexo_ancine": "CEU SÃO MIGUEL"
+  },
+  {
+    "unidade": "Spcine São Pedro",
+    "endereco": "R. Professora Lucila Cerqueira, 194 - Jardim São Pedro",
+    "complexo_ancine": "CEU SÃO PEDRO"
+  },
+  {
+    "unidade": "Spcine São Rafael",
+    "endereco": "R. Cinira Polônio, 100 - Conj. Promorar Rio Claro",
+    "complexo_ancine": "CEU SÃO RAFAEL"
+  },
+  {
+    "unidade": "Spcine Taipas",
+    "endereco": "R. João Amado Coutinho, 240 - Conj. Res. Elisio Teixeira Leite",
+    "complexo_ancine": "CEU TAIPAS"
+  },
+  {
+    "unidade": "Spcine Tremembé",
+    "endereco": "R. Adauto Bezerra Delgado, 94 - Parque Casa de Pedra",
+    "complexo_ancine": "CEU TREMEMBÉ"
+  },
+  {
+    "unidade": "Spcine Três Lagos",
+    "endereco": "Rua Maria Moura da Conceição, S/N - Jd. Belcito",
+    "complexo_ancine": "CEU TRÊS LAGOS"
+  },
+  {
+    "unidade": "Spcine Vila Alpina",
+    "endereco": "R. João Pedro Lecór, 141 - Jardim Avelino",
+    "complexo_ancine": "CEU VILA ALPINA"
+  },
+  {
+    "unidade": "Spcine Vila Atlântica",
+    "endereco": "R. Cel. José Venâncio Dias, 840 - Jaraguá",
+    "complexo_ancine": "CEU VILA ATLÂNTICA - PROFESSOR JOÃO SOARES FILHO"
+  },
+  {
+    "unidade": "Spcine Vila do Sol",
+    "endereco": "Avenida dos Funcionários Públicos, 369 - Vila do Sol",
+    "complexo_ancine": "CEU VILA DO SOL"
+  }
+]

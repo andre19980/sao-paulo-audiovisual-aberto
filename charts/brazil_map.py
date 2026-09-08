@@ -107,7 +107,7 @@ def plot_custom_choropleth_brazil_map(df, geojson_path, uf_col, value_col, value
 
   return
 
-def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, color_title, title, lat_col='Latitude', lon_col='Longitude', color_scale_domain=None, size_scale_domain=None, tooltip_fields=None):
+def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, color_title, title, lat_col='Latitude', lon_col='Longitude', color_scale_domain=None, size_scale_domain=None, tooltip_fields=None, color_type='Q', color_scheme=None, opacity_col=None, default_opacity=0.9):
   """
   Mapa coroplético do Brasil com as capitais sobrepostas.
 
@@ -130,6 +130,12 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
     Colunas numéricas usadas no tamanho e na cor das bolinhas.
   lat_col / lon_col : str
     Nomes das colunas de latitude/longitude do dataframe (defaults 'Latitude'/'Longitude').
+  color_type : str
+    Tipo da escala de cor: 'Q' (quantitativa, default) ou 'N' (nominal/categórica,
+    para destacar grupos com cores distintas).
+  color_scheme : str | list | None
+    Para color_type='Q', nome do esquema (default 'blues'). Para color_type='N',
+    lista de cores explícitas (ex.: ['#1f77b4', '#e41a1c']).
   """
   with open(geojson_path, 'r', encoding='utf-8') as f:
     geo_data = json.load(f)
@@ -152,21 +158,29 @@ def plot_custom_brazil_map(df, geojson_path, label, size, size_title, color, col
   if size_scale_domain is not None:
     size_scale_kwargs['domain'] = size_scale_domain
 
-  color_scale_kwargs = {'scheme': 'blues'}
-  if color_scale_domain is not None:
-    color_scale_kwargs['domain'] = color_scale_domain
+  if color_type == 'N':
+    color_scale_kwargs = {}
+    if isinstance(color_scheme, list):
+      color_scale_kwargs['range'] = color_scheme
+    elif isinstance(color_scheme, str):
+      color_scale_kwargs['scheme'] = color_scheme
+  else:
+    color_scale_kwargs = {'scheme': color_scheme or 'blues'}
+    if color_scale_domain is not None:
+      color_scale_kwargs['domain'] = color_scale_domain
 
   if tooltip_fields is None:
     tooltip_fields = [label, color, size]
 
   points = (
     alt.Chart(df)
-      .mark_circle(opacity=0.9, stroke='white', strokeWidth=1)
+      .mark_circle(opacity=default_opacity if opacity_col is None else 1, stroke='white', strokeWidth=1)
       .encode(
         longitude=alt.Longitude(f'{lon_col}:Q'),
         latitude=alt.Latitude(f'{lat_col}:Q'),
         size=alt.Size(f'{size}:Q', title=size_title, scale=alt.Scale(**size_scale_kwargs)),
-        color=alt.Color(f'{color}:Q', title=color_title, scale=alt.Scale(**color_scale_kwargs)),
+        color=alt.Color(f'{color}:{color_type}', title=color_title, scale=alt.Scale(**color_scale_kwargs)),
+        opacity=alt.Opacity(f'{opacity_col}:Q', legend=None) if opacity_col is not None else alt.value(default_opacity),
         tooltip=tooltip_fields,
       )
   )
