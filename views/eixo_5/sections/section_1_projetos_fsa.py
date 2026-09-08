@@ -7,7 +7,7 @@ from charts.bar import plot_custom_grouped_bar_chart, plot_custom_ranking_bar_ch
 from charts.brazil_map import plot_custom_choropleth_brazil_map
 from lib.normalizers import normaliza_cnpj
 
-def section(df_projetos_fsa, df_produtoras_independentes=None):
+def section(df_projetos_fsa, df_produtoras_independentes):
   st.header('Panorama geral do FSA')
 
   total_projetos = len(df_projetos_fsa)
@@ -133,7 +133,6 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
   df_fsa_cnpj_all = df_fsa_cnpj_all.dropna(subset=['CNPJ_PROP_LIMPO', 'CNPJ_PROD_LIMPO'])
 
   df_pi_cpnj_all = df_produtoras_independentes.copy()
-  df_pi_cpnj_all['CNPJ_LIMPO'] = df_pi_cpnj_all['CNPJ'].apply(normaliza_cnpj)
 
   fsa_acesso = set(df_fsa_cnpj_all['CNPJ_PROP_LIMPO']) | set(df_fsa_cnpj_all['CNPJ_PROD_LIMPO'])
   pi_cnpj = set(df_pi_cpnj_all['CNPJ_LIMPO'])
@@ -246,7 +245,6 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
   st.subheader('FSA e produtoras independentes paulistanas')
   df_pi_sp = df_produtoras_independentes.copy()
   df_pi_sp = df_pi_sp[df_pi_sp['MUNICIPIO'] == 'SÃO PAULO']
-  df_pi_sp['CNPJ_LIMPO'] = df_pi_sp['CNPJ'].apply(normaliza_cnpj)
   df_pi_sp = df_pi_sp[df_pi_sp['CNPJ_LIMPO'].isin(fsa_acesso)]
   
   fsa_cols=['TITULO_PROJETO', 'VALOR_CONTRATO_DOU', 'VALOR_TOTAL_LIBERADO']
@@ -255,6 +253,7 @@ def section(df_projetos_fsa, df_produtoras_independentes=None):
     df_fsa_cnpj_all[fsa_cols + ['CNPJ_PROD_LIMPO']].rename(columns={'CNPJ_PROD_LIMPO': 'CNPJ_LIMPO'}),
   ]).dropna()
   fsa_all_cnpj = fsa_all_cnpj.drop_duplicates(subset=['TITULO_PROJETO', 'CNPJ_LIMPO'])
+
   with st.container(horizontal=True):
     col1, col2 = st.columns([1, 1], gap='large')
 

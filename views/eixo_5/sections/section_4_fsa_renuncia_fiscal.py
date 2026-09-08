@@ -5,7 +5,7 @@ from charts.bar import plot_custom_ranking_bar_chart
 from charts.hist import plot_custom_histogram_chart
 from lib.normalizers import normaliza_cnpj
 
-def _analise_cruzada(fsa_df, ren_df, titulo):
+def _analise_cruzada(fsa_df, ren_df, titulo, fsa_total_contratado):
   fsa_por = fsa_df.groupby('CNPJ_LIMPO')['VALOR_CONTRATO_DOU'].sum()
   ren_por = ren_df.groupby('CNPJ_LIMPO')['TOTAL_CAPTADO'].sum()
 
@@ -21,7 +21,9 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
   st.caption(
     'Compara as produtoras que acessam o FSA com as que captam via renúncia fiscal '
     '(Lei do Audiovisual e Rouanet). O objetivo é identificar o quanto os dois mecanismos se '
-    'sobrepõem e quantas produtoras dependem de apenas um deles.'
+    'sobrepõem e quantas produtoras dependem de apenas um deles. '
+    'Uma produtora é considerada com acesso ao FSA quando o seu CNPJ aparece como '
+    'proponente OU produtora em projetos contratados pelo fundo.'
   )
 
   col1, col2, col3 = st.columns([1, 1, 1], gap='large')
@@ -40,7 +42,7 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
   df_dupla['TOTAL'] = df_dupla['FSA'] + df_dupla['RENFISC']
   df_dupla['PARTICIPACAO_FSA (%)'] = (df_dupla['FSA'] / df_dupla['TOTAL'] * 100).round(1)
   df_dupla['RAZAO_SOCIAL'] = df_dupla['CNPJ_LIMPO'].map(
-    fsa_df.drop_duplicates('CNPJ_LIMPO').set_index('CNPJ_LIMPO')['RAZAO_SOCIAL_PROPONENTE']
+    fsa_df.drop_duplicates('CNPJ_LIMPO').set_index('CNPJ_LIMPO')['RAZAO_SOCIAL']
   )
   df_dupla = df_dupla.sort_values('TOTAL', ascending=False)
   
@@ -66,7 +68,9 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
       )
       st.caption(
         'Top 15 produtoras que combinam recursos do FSA e da renúncia fiscal, pelo valor '
-        'total. A coluna de participação mostra a dependência relativa de cada fonte.'
+        'total. A coluna de participação mostra a dependência relativa de cada fonte. '
+        'Considera como acesso ao FSA o CNPJ presente como proponente ou produtora nos '
+        'projetos do fundo.'
       )
       
     with col2:
@@ -104,11 +108,13 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
         'Das produtoras presentes nos dois mecanismos, muitas dependem fortemente de um '
         'deles. Quem está em "FSA < 20%" depende quase só da renúncia fiscal, e quem está em '
         '"FSA > 80%" depende quase só do FSA — o que sugere oportunidade de políticas que '
-        'estimulem a diversificação de fontes de fomento.'
+        'estimulem a diversificação de fontes de fomento. '
+        'Considera como acesso ao FSA o CNPJ presente como proponente ou produtora nos '
+        'projetos do fundo.'
       )
   
   st.markdown(f'#### Comparação de valores captados')
-  fsa_total = fsa_por.sum()
+  fsa_total = fsa_total_contratado
   ren_total = ren_por.sum()
   fsa_n = len(fsa_set)
   ren_n = len(ren_set)
@@ -118,14 +124,13 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
   col1, col2 = st.columns([1, 1], gap='large')
   with col1:
     st.metric('Total FSA', f'R$ {fsa_total:,.0f}', border=True)
-    st.metric('Produtoras FSA', f'{fsa_n:,}', border=True)
+    st.metric('Produtoras FSA :material/warning:', f'{fsa_n:,}', border=True)
     st.metric('Média por produtora (FSA)', f'R$ {fsa_media:,.0f}', border=True)
   with col2:
     st.metric('Total renúncia fiscal', f'R$ {ren_total:,.0f}', border=True)
     st.metric('Produtoras renúncia fiscal', f'{ren_n:,}', border=True)
     st.metric('Média por produtora (renúncia)', f'R$ {ren_media:,.0f}', border=True)
-    
-    
+
   with st.container(border=True):
     df_comp_valores = pd.DataFrame({
       'Mecanismo': ['FSA', 'Renúncia fiscal'],
@@ -151,7 +156,8 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
         f'A renúncia fiscal movimenta cerca de {ren_total/fsa_total:.1f}x mais que o FSA '
         f'no total, e a média por produtora é de R$ {ren_media/1e6:.1f} mi na renúncia contra '
         f'R$ {fsa_media/1e6:.1f} mi no FSA. O FSA atende a {fsa_n:,} produtoras e a renúncia a '
-        f'{ren_n:,}, indicando alcances e valores complementares.'
+        f'{ren_n:,}, indicando alcances e valores complementares. A contagem de produtoras do '
+        f'FSA considera o CNPJ como proponente ou produtora nos projetos do fundo.'
       )
 
   return df_dupla
@@ -159,7 +165,15 @@ def _analise_cruzada(fsa_df, ren_df, titulo):
 
 def section(df_projetos_fsa, df_projetos_renfisc, df_produtoras_independentes=None):
   st.header('FSA e Renúncia fiscal')
-  df_projetos_fsa['CNPJ_LIMPO'] = df_projetos_fsa['CNPJ_PROP_LIMPO']
+
+  fsa_cols = ['TITULO_PROJETO', 'VALOR_CONTRATO_DOU']
+  df_fsa_cnpj_all = pd.concat([
+    df_projetos_fsa[fsa_cols + ['RAZAO_SOCIAL_PROPONENTE', 'CNPJ_PROP_LIMPO']]
+      .rename(columns={'RAZAO_SOCIAL_PROPONENTE': 'RAZAO_SOCIAL', 'CNPJ_PROP_LIMPO': 'CNPJ_LIMPO'}),
+    df_projetos_fsa[fsa_cols + ['RAZAO_SOCIAL_PRODUTORA', 'CNPJ_PROD_LIMPO']]
+      .rename(columns={'RAZAO_SOCIAL_PRODUTORA': 'RAZAO_SOCIAL', 'CNPJ_PROD_LIMPO': 'CNPJ_LIMPO'}),
+  ]).dropna(subset=['CNPJ_LIMPO'])
+  df_fsa_cnpj_all = df_fsa_cnpj_all.drop_duplicates(subset=['TITULO_PROJETO', 'CNPJ_LIMPO'])
 
   recorte = st.segmented_control(
     'Recorte geográfico',
@@ -168,20 +182,24 @@ def section(df_projetos_fsa, df_projetos_renfisc, df_produtoras_independentes=No
     default='Nacional',
   )
 
-  fsa_uso = df_projetos_fsa
+  fsa_uso = df_fsa_cnpj_all
   ren_uso = df_projetos_renfisc
   titulo = 'Brasil'
+  fsa_total_contratado = df_projetos_fsa['VALOR_CONTRATO_DOU'].sum()
 
   if recorte == 'São Paulo' and df_produtoras_independentes is not None:
     pi_sp = df_produtoras_independentes.copy()
-    pi_sp['CNPJ_LIMPO'] = pi_sp['CNPJ'].apply(normaliza_cnpj)
     pi_sp = pi_sp[pi_sp['MUNICIPIO'] == 'SÃO PAULO']
     cnpj_sp = set(pi_sp['CNPJ_LIMPO'])
 
-    fsa_uso = df_projetos_fsa[df_projetos_fsa['CNPJ_LIMPO'].isin(cnpj_sp)].copy()
+    fsa_uso = df_fsa_cnpj_all[df_fsa_cnpj_all['CNPJ_LIMPO'].isin(cnpj_sp)].copy()
     ren_uso = df_projetos_renfisc[df_projetos_renfisc['CNPJ_LIMPO'].isin(cnpj_sp)].copy()
     titulo = 'São Paulo'
+    fsa_total_contratado = df_projetos_fsa[
+      df_projetos_fsa['CNPJ_PROP_LIMPO'].isin(cnpj_sp) |
+      df_projetos_fsa['CNPJ_PROD_LIMPO'].isin(cnpj_sp)
+    ]['VALOR_CONTRATO_DOU'].sum()
 
-  _analise_cruzada(fsa_uso, ren_uso, titulo)
+  _analise_cruzada(fsa_uso, ren_uso, titulo, fsa_total_contratado)
 
   return

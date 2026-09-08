@@ -101,7 +101,6 @@ def section(df_contribuintes, df_produtoras_independentes):
       )
 
   df_contribuintes['CNPJ_LIMPO'] = df_contribuintes['CNPJ_CONTRIBUINTE'].apply(normaliza_cnpj)
-  df_produtoras_independentes['CNPJ_LIMPO'] = df_produtoras_independentes['CNPJ'].apply(normaliza_cnpj)
   df_pi_sp = df_produtoras_independentes[df_produtoras_independentes['MUNICIPIO'] == 'SÃO PAULO'].copy()
 
   df = pd.merge(df_contribuintes, df_pi_sp, on='CNPJ_LIMPO')

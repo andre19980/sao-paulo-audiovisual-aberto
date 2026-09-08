@@ -18,6 +18,15 @@ DATA_URL = {
   'produtores': 'https://dados.ancine.gov.br/dados-abertos/produtores-de-obras-nao-publicitarias-brasileiras.csv',
 }
 
+DATA_PAGE_SOURCE = {
+  'Projetos do FSA': 'https://dados.gov.br/dados/conjuntos-dados/projetos--de-investimento-contratados-no-ambito-do-fsa',
+  'Prestação de Contas': 'https://dados.gov.br/dados/conjuntos-dados/relacao-de-processos-em-fase-de-prestacao-de-contas',
+  'Contribuintes': 'https://dados.gov.br/dados/conjuntos-dados/relacao-de-contribuintes-que-aplicaram-em-projetos-com-renuncia-fiscal',
+  'Produtores de Obras Não Publicitárias': 'https://dados.gov.br/dados/conjuntos-dados/produtores-de-obras-nao-publicitarias-brasileiras',
+  'Produtoras Independentes Regulares': 'https://dados.gov.br/dados/conjuntos-dados/produtoras-independentes-regulares-registradas-na-ancine',
+  'Captação por Renúncia Fiscal': 'https://dados.gov.br/dados/conjuntos-dados/relacao-de-projetos-com-valores-captados-por-mecanismo-de-renuncia-fiscal'
+}
+
 st.title('Eixo 5 - Transparência e Eficiência do Fomento Público')
 
 df_projetos_fsa = load_data(DATA_URL['projetos_fsa'])
@@ -60,25 +69,15 @@ df_projetos_fsa['DATA_DESEMBOLSO'] = pd.to_datetime(
   dayfirst=True
 )
 
-# Exibição dos dados para fins de debug
-# st.subheader('Visão geral dos dados carregados')
-# st.write(f'**{len(df_obras):,}** obras registradas entre {int(df_obras["ANO"].min())} e {int(df_obras["ANO"].max())}, '
-#          f'a partir de **{df_obras["ANO"].nunique()}** arquivos anuais.')
+df_produtoras_independentes['CNPJ_LIMPO'] = df_produtoras_independentes['CNPJ'].apply(normaliza_cnpj)
 
-# st.subheader('Amostra das obras')
-# st.dataframe(df_obras.head(20), hide_index=True)
-# st.subheader('Projetos de investimento contratados no âmbito do FSA')
-# st.write(df_projetos_fsa)
-# st.subheader('Relação de processos em fase de prestação de contas')
-# st.write(df_processos_prest)
-# st.subheader('Relação de contribuintes que aplicaram em projetos com renúncia fiscal')
-# st.write(df_contribuintes)
-# st.subheader('Produtoras independentes')
-# st.write(df_produtoras_independentes)
-# st.subheader('Produtores')
-# st.write(df_produtores)
-# st.subheader('Projetos com renúncia fiscal')
-# st.write(df_projetos_renfisc)
+with st.sidebar:
+  st.caption('Links para fontes de dados:')
+  with st.container(horizontal=False):
+    for nome, link in DATA_PAGE_SOURCE.items():
+      st.link_button(nome, link, width='stretch')
+  with st.container(horizontal=True, horizontal_alignment='center'):
+    st.image('assets/logo_spcine-principal.png', width=96, link='https://spcine.com.br/')
 
 tab1, tab2, tab3, tab4 = st.tabs([
   'Projetos contratados via FSA',
