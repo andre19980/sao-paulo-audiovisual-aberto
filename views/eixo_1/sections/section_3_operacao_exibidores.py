@@ -10,10 +10,11 @@ def section(df_salas_complexos):
   st.subheader('Informações sobre grupos exibidores no município')
 
   df_salas_complexos_sp = df_salas_complexos[df_salas_complexos['MUNICIPIO_COMPLEXO'] == 'SÃO PAULO']
-  df_exibidores_sp = df_salas_complexos['REGISTRO_EXIBIDOR'].unique()
-  df_exibidores_situacao = df_salas_complexos.groupby(['REGISTRO_EXIBIDOR', 'SITUACAO_EXIBIDOR']).size().reset_index()
-  df_exibidores_regulares_sp = df_exibidores_situacao[df_exibidores_situacao['SITUACAO_EXIBIDOR'] == 'REGULAR']
-  df_exibidores_irregulares_sp = df_exibidores_situacao[df_exibidores_situacao['SITUACAO_EXIBIDOR'] == 'IRREGULAR']
+  df_salas_complexos_sp_metricas = df_salas_complexos_sp[df_salas_complexos_sp['NOME_GRUPO_EXIBIDOR'] != 'NÃO PERTENCE A NENHUM GRUPO EXIBIDOR']
+  df_exibidores_sp = df_salas_complexos_sp_metricas['NOME_GRUPO_EXIBIDOR'].unique()
+  situacoes_por_grupo = df_salas_complexos_sp_metricas.groupby('NOME_GRUPO_EXIBIDOR')['SITUACAO_EXIBIDOR'].apply(set)
+  df_exibidores_regulares_sp = [g for g, sit in situacoes_por_grupo.items() if sit == {'REGULAR'}]
+  df_exibidores_irregulares_sp = [g for g, sit in situacoes_por_grupo.items() if 'IRREGULAR' in sit]
   df_salas_complexos_sp_funcionamento_irregular = df_salas_complexos_sp[(df_salas_complexos_sp['SITUACAO_SALA'] == 'EM FUNCIONAMENTO') & (df_salas_complexos_sp['SITUACAO_EXIBIDOR'] == 'IRREGULAR')]
 
   with st.container(horizontal=True):
@@ -27,6 +28,13 @@ def section(df_salas_complexos):
 
       c.metric("Número de exibidores em situação irregular", len(df_exibidores_irregulares_sp), border=True)
       d.metric("Sala em funcionamento com exibidor em situação irregular", len(df_salas_complexos_sp_funcionamento_irregular), border=True)
+      st.caption(
+        'Os grupos em situação regular e irregular não somam o total: um grupo só é '
+        'regular se todas as suas salas estiverem em situação REGULAR e só é irregular '
+        'se tiver ao menos uma sala IRREGULAR. Grupos com salas em outras situações '
+        '(ex.: INDEFERIDO) ficam fora das duas contagens. Além disso, o grupo residual '
+        '"NÃO PERTENCE A NENHUM GRUPO EXIBIDOR" é desconsiderado dessas métricas.'
+      )
     
     with col2:
       st.dataframe(
