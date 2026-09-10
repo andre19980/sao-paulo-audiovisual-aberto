@@ -57,6 +57,7 @@ def section(df_complexos_evolucao, df_salas_complexos):
       color_title='São Paulo',
       title='Média de salas por complexo vs número de complexos por município',
       log_x=True,
+      tooltip_fields=['Município', 'Número de complexos', 'Média de salas por complexo', 'Total de salas'],
     )
     st.caption(
       'Cada bolha é um município: o eixo X mostra quantos complexos existem (escala logarítmica), '
@@ -97,6 +98,7 @@ def section(df_complexos_evolucao, df_salas_complexos):
           color='Média de salas por complexo',
           color_title='Média de salas por complexo',
           title='Média de salas por complexo e número de complexos nas capitais brasileiras (2026)',
+          tooltip_fields=['Município', 'UF', 'Média de salas por complexo', 'Número de complexos'],
         )
         st.caption(
           'Cada bolha é uma capital: o tamanho representa o número de complexos de cinema '
